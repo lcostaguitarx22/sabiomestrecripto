@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html>
+<body>
+  <div id="tradingview_widget" style="width: 800px; height: 600px;"></div>
+  <script type="text/javascript" src="https://s3.tradingview.com/tv.js"></script>
+  <script type="text/javascript">
+    setTimeout(() => {
+      const widget = new TradingView.widget({
+        autosize: true,
+        symbol: `BINANCE:BTCUSDT`,
+        interval: '15',
+        timezone: 'America/Sao_Paulo',
+        theme: 'dark',
+        style: '1',
+        locale: 'br',
+        container_id: 'tradingview_widget',
+      });
+      console.log("Widget created", widget);
+      
+      widget.onChartReady(() => {
+          console.log("Chart Ready!");
+          try {
+              const chart = widget.activeChart ? widget.activeChart() : widget.chart();
+              console.log("Chart instance:", chart);
+              if (chart.createShape) {
+                  console.log("createShape exists!");
+              } else {
+                  console.log("createShape does not exist");
+              }
+          } catch(e) {
+              console.error(e);
+          }
+      });
+    }, 1000);
+  </script>
+</body>
+</html>

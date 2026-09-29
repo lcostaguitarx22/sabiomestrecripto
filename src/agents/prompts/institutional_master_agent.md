@@ -37,6 +37,7 @@ A sua resposta deve conter estritamente as seções abaixo em formato Markdown. 
 - **Porcentagem de Confiança do Sinal:** [Ex: 85%]
 - **Ponto Ideal de Entrada (Retração):** [Preço Exato]
 - **Alvo Técnico (Take Profit):** [Preço do alvo baseado na próxima zona de liquidez]
+- **Alvo Técnico (Take Profit 2 e 3):** [Preço do alvo baseado nas próximas zonas de liquidez]
 - **Saída de Emergência (Stop Loss):** [Preço seguro invalidando a tese]
 - **Relação Risco/Retorno:** Mínimo exigido de 3:1.
 - **Tempo Estimado de Retorno:** [Ex: Day Trade ou Swing Trade de X horas/dias]
