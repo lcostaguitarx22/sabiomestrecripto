@@ -105,17 +105,17 @@ export default function Home() {
           <div>
             <h1 className="text-3xl font-bold text-white flex items-center gap-3">
               <Brain className="w-8 h-8 text-indigo-500" />
-              MeuSabioMestreCripto
-              <span className="text-sm font-normal bg-indigo-500/20 text-indigo-400 px-2 py-1 rounded">Autônomo v2</span>
+              MeuSabioMestreCripto - Developer: Luciano Costa
+              <span className="text-sm font-normal bg-indigo-500/20 text-indigo-400 px-2 py-1 rounded">Trader: LucianoCosta</span>
             </h1>
-            <p className="text-neutral-400 mt-2">Robô Quantitativo de Análise Gráfica com IA</p>
+            <p className="text-neutral-400 mt-2">Android de Análise Gráfica com IA</p>
           </div>
         </div>
 
         {/* Control Panel */}
         <div className="bg-neutral-900 border border-neutral-800 rounded-xl p-6 shadow-xl">
           <h2 className="text-xl font-semibold mb-4 flex items-center gap-2">
-            <Activity className="w-5 h-5 text-emerald-500" /> Painel de Controle (Scanner)
+            <Activity className="w-5 h-5 text-emerald-500" /> Painel de Controle (Super Scanner)
           </h2>
           <div className="flex flex-wrap gap-4 items-end">
             <div>
@@ -147,6 +147,7 @@ export default function Home() {
                 onChange={(e) => setInterval(e.target.value)}
                 className="bg-neutral-800 border border-neutral-700 text-white rounded-lg px-4 py-2 w-48 focus:ring-2 focus:ring-indigo-500 outline-none"
               >
+                <option value="15m">5 Minutos</option>
                 <option value="15m">15 Minutos</option>
                 <option value="1h">1 Hora</option>
                 <option value="4h">4 Horas</option>
@@ -178,7 +179,7 @@ export default function Home() {
             {/* Shortcuts */}
             <div className="flex flex-wrap gap-2 items-center lg:ml-auto mt-4 lg:mt-0 pb-1">
               <span className="text-sm text-neutral-500 mr-1 hidden xl:inline-block">Populares:</span>
-              {["BTCUSDT", "ETHUSDT", "SOLUSDT", "NEARUSDT", "BNBUSDT", "ADAUSDT", "DOGEUSDT", "AVAXUSDT", "XRPUSDT"].map(s => (
+              {["BTCUSDT", "ETHUSDT", "SOLUSDT", "NEARUSDT", "BNBUSDT", "ADAUSDT", "DOGEUSDT", "AVAXUSDT", "XRPUSDT", "SUIUSDT", "HYPEUSDT", "ZECUSDT", "LINKUSDT"].map(s => (
                 <button
                   key={s}
                   onClick={() => setSymbol(s)}
