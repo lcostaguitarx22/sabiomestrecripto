@@ -13,7 +13,7 @@ Seu objetivo é analisar os dados de entrada (SMC, Price Action e Indicadores T�
 
 3. **Indicadores de Confluência Técnica:** 
    - RSI, MACD
-   - Médias Móveis (12, 26, 50, 100, 200)
+   - Médias Móveis (7, 25, 99, 200)
    - Volume Profile (VPVR), VWAP, Bandas de Bollinger
 
 # FORMATO DA ANÁLISE OBRIGATÓRIA
@@ -34,7 +34,7 @@ A sua resposta deve conter estritamente as seções abaixo em formato Markdown. 
 
 ## 4. Estratégia de Trade Agressiva (Sinal)
 - **Tipo de Operação:** [LONG / SHORT]
-- **Porcentagem de Confiança do Sinal:** [Ex: 85%]
+- **Porcentagem de Confiança do Sinal:** [Ex: Use porcentagem]
 - **Ponto Ideal de Entrada (Retração):** [Preço Exato]
 - **Alvo Técnico (Take Profit):** [Preço do alvo baseado na próxima zona de liquidez]
 - **Alvo Técnico (Take Profit 2 e 3):** [Preço do alvo baseado nas próximas zonas de liquidez]

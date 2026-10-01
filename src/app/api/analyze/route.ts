@@ -83,12 +83,19 @@ export async function POST(req: Request) {
       **Confluência de Indicadores:** [Detalhes sobre RSI, MACD, Médias Móveis]
       
       **Ação Recomendada:** [BUY / SELL / HOLD]
+      **Preço de Entrada:** [Preço]
       **Confiança:** [0 a 100]%
       **Probabilidade de Sucesso:** [0 a 100]%
       **Razão Principal:** [Explicação direta]
       **Gatilhos de Confirmação:** [O que precisa acontecer para confirmar]
       **Stop Loss Sugerido:** [Preço]
-      **Take Profit Sugerido:** [Preço]
+      **Take Profit 1:** [Preço]
+      **Take Profit 2:** [Preço]
+      **Take Profit 3:** [Preço]
+      **R/R:** [Ex: 1:3]
+      **Tipo de Ordem:** [Market / Limit]
+      **Tendência:** [Alta / Baixa / Lateral]
+      **Prognóstico:** [Explicação resumida]
       
       **Dicas de Operação Institucional:**
       > [Descreva o plano de Trade com base em SMC ou Price action]
@@ -97,15 +104,31 @@ export async function POST(req: Request) {
     console.log("[API] Chamando a Inteligência Artificial com os Agentes...");
     const aiAnalysis = await analyzeScannerData(masterPrompt, 3); // 3 retries
     
-    // Fallback matemático simples caso a IA falhe completamente (Erro 503 persistente)
+    // Default fallback values
     let action = "HOLD";
     let confianca = 50;
+    let precoEntrada = indicators.currentPrice;
     let stopLoss = indicators.support * 0.995;
-    let takeProfit = indicators.resistance * 0.995;
+    let takeProfit1 = indicators.resistance * 0.995;
+    let takeProfit2 = takeProfit1;
+    let takeProfit3 = takeProfit1;
+    let rr = "-";
+    let tipoOrdem = "-";
+    let tendencia = "-";
+    let prognostico = "-";
     let message = aiAnalysis || "Erro ao gerar análise (Serviço da IA Indisponível após várias tentativas).";
 
     if (aiAnalysis) {
-      // Regex para extrair Ação
+      // Helper function for regex
+      const extractFloat = (regex: RegExp, fallback: number) => {
+        const match = aiAnalysis.match(regex);
+        return match ? parseFloat(match[1].replace(/,/g, '')) : fallback;
+      };
+      const extractString = (regex: RegExp, fallback: string) => {
+        const match = aiAnalysis.match(regex);
+        return match ? match[1].trim() : fallback;
+      };
+
       const actionMatch = aiAnalysis.match(/\*\*Ação Recomendada:\*\*\s*(BUY|SELL|HOLD)/i);
       if (actionMatch) {
         action = actionMatch[1].toUpperCase();
@@ -114,19 +137,18 @@ export async function POST(req: Request) {
         if (aiAnalysis.includes("SELL")) action = "SELL";
       }
 
-      // Regex para Confiança
-      const confMatch = aiAnalysis.match(/\*\*Confiança:\*\*\s*(\d+)/i);
-      if (confMatch) confianca = parseInt(confMatch[1], 10);
+      confianca = extractFloat(/\*\*Confiança:\*\*\s*(\d+)/i, confianca);
+      precoEntrada = extractFloat(/\*\*Preço de Entrada:\*\*\s*\$?\s*([\d,.]+)/i, precoEntrada);
+      stopLoss = extractFloat(/\*\*Stop Loss Sugerido:\*\*\s*\$?\s*([\d,.]+)/i, stopLoss);
+      takeProfit1 = extractFloat(/\*\*Take Profit 1:\*\*\s*\$?\s*([\d,.]+)/i, takeProfit1);
+      takeProfit2 = extractFloat(/\*\*Take Profit 2:\*\*\s*\$?\s*([\d,.]+)/i, takeProfit2);
+      takeProfit3 = extractFloat(/\*\*Take Profit 3:\*\*\s*\$?\s*([\d,.]+)/i, takeProfit3);
+      rr = extractString(/\*\*R\/R:\*\*\s*(.+)/i, rr);
+      tipoOrdem = extractString(/\*\*Tipo de Ordem:\*\*\s*(.+)/i, tipoOrdem);
+      tendencia = extractString(/\*\*Tendência:\*\*\s*(.+)/i, tendencia);
+      prognostico = extractString(/\*\*Prognóstico:\*\*\s*(.+)/i, prognostico);
 
-      // Regex para Stop Loss
-      const stopMatch = aiAnalysis.match(/\*\*Stop Loss Sugerido:\*\*\s*\$?\s*([\d,.]+)/i);
-      if (stopMatch) stopLoss = parseFloat(stopMatch[1].replace(/,/g, ''));
-
-      // Regex para Take Profit
-      const takeMatch = aiAnalysis.match(/\*\*Take Profit Sugerido:\*\*\s*\$?\s*([\d,.]+)/i);
-      if (takeMatch) takeProfit = parseFloat(takeMatch[1].replace(/,/g, ''));
     } else {
-       // Se deu erro na IA, aplica regras mínimas locais baseadas em RSI/MACD para não quebrar a tela.
        if (indicators.rsi < 40 && indicators.macd.histogram && indicators.macd.histogram > 0) { action = "BUY"; confianca = 75; }
        if (indicators.rsi > 60 && indicators.macd.histogram && indicators.macd.histogram < 0) { action = "SELL"; confianca = 75; }
     }
@@ -134,8 +156,15 @@ export async function POST(req: Request) {
     let parsedDecision = {
       action,
       confidenceScore: confianca,
+      precoEntrada,
       stopLoss,
-      takeProfit,
+      takeProfit1,
+      takeProfit2,
+      takeProfit3,
+      rr,
+      tipoOrdem,
+      tendencia,
+      prognostico,
       message
     };
 
@@ -146,8 +175,15 @@ export async function POST(req: Request) {
       price: indicators.currentPrice,
       action: parsedDecision.action,
       score: parsedDecision.confidenceScore,
+      precoEntrada: parsedDecision.precoEntrada,
       stopLoss: parsedDecision.stopLoss,
-      takeProfit: parsedDecision.takeProfit,
+      takeProfit1: parsedDecision.takeProfit1,
+      takeProfit2: parsedDecision.takeProfit2,
+      takeProfit3: parsedDecision.takeProfit3,
+      rr: parsedDecision.rr,
+      tipoOrdem: parsedDecision.tipoOrdem,
+      tendencia: parsedDecision.tendencia,
+      prognostico: parsedDecision.prognostico,
       message: parsedDecision.message,
       indicators: {
         rsi: indicators.rsi,
@@ -155,6 +191,7 @@ export async function POST(req: Request) {
         support: indicators.support,
         resistance: indicators.resistance
       },
+      status: "OPEN",
       createdAt: new Date().toISOString()
     });
 
