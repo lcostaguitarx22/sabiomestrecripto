@@ -9,9 +9,8 @@ interface TradingViewWidgetProps {
 }
 
 export default function TradingViewWidget({ symbol, interval }: TradingViewWidgetProps) {
-  const onLoadScriptRef = useRef<(() => void) | null>(null);
+  const containerRef = useRef<HTMLDivElement>(null);
 
-  // Mapeamento de intervalos do nosso app (15m, 1h, 4h, 1d) para o formato do TradingView (15, 60, 240, D)
   const mapInterval = (inv: string) => {
     switch(inv) {
       case '15m': return '15';
@@ -23,28 +22,13 @@ export default function TradingViewWidget({ symbol, interval }: TradingViewWidge
   };
 
   useEffect(() => {
-    onLoadScriptRef.current = createWidget;
+    let widget: any = null;
 
-    if (!tvScriptLoadingPromise) {
-      tvScriptLoadingPromise = new Promise((resolve) => {
-        const script = document.createElement('script');
-        script.id = 'tradingview-widget-loading-script';
-        script.src = 'https://s3.tradingview.com/tv.js';
-        script.type = 'text/javascript';
-        script.onload = () => resolve();
-        document.head.appendChild(script);
-      });
-    }
-
-    tvScriptLoadingPromise.then(() => {
-      if (onLoadScriptRef.current) {
-        onLoadScriptRef.current();
-      }
-    });
-
-    function createWidget() {
-      if (document.getElementById('tradingview_widget') && 'TradingView' in window) {
-        new (window as any).TradingView.widget({
+    const createWidget = () => {
+      if (containerRef.current && 'TradingView' in window) {
+        // Limpa o container antes de recriar
+        containerRef.current.innerHTML = '';
+        widget = new (window as any).TradingView.widget({
           autosize: true,
           symbol: `BINANCE:${symbol}`,
           interval: mapInterval(interval),
@@ -65,15 +49,38 @@ export default function TradingViewWidget({ symbol, interval }: TradingViewWidge
             "BB@tv-basicstudies",
             "MASimple@tv-basicstudies"
           ],
-          container_id: 'tradingview_widget',
+          container: containerRef.current, // Usar container ref ao invés de string ID
         });
       }
+    };
+
+    if (!tvScriptLoadingPromise) {
+      tvScriptLoadingPromise = new Promise((resolve) => {
+        const script = document.createElement('script');
+        script.id = 'tradingview-widget-loading-script';
+        script.src = 'https://s3.tradingview.com/tv.js';
+        script.type = 'text/javascript';
+        script.onload = () => resolve();
+        document.head.appendChild(script);
+      });
     }
+
+    tvScriptLoadingPromise.then(() => {
+      createWidget();
+    });
+
+    return () => {
+      if (widget && widget.remove) {
+        try {
+          widget.remove();
+        } catch(e) {}
+      }
+    };
   }, [symbol, interval]);
 
   return (
     <div className="w-full h-[75vh] min-h-[600px] bg-neutral-950 rounded-xl overflow-hidden border border-neutral-800 shadow-xl relative">
-      <div id="tradingview_widget" className="w-full h-full" />
+      <div ref={containerRef} className="w-full h-full" />
     </div>
   );
 }
