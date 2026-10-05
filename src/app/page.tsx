@@ -3,10 +3,78 @@
 import { useState, useEffect, useMemo } from "react";
 import { collection, onSnapshot, query, orderBy, limit, deleteDoc, doc } from "firebase/firestore";
 import { db } from "@/lib/firebase/client";
-import { Activity, TrendingUp, TrendingDown, Clock, Brain, Loader2, Play, Trash2, AlertTriangle, ChevronDown } from "lucide-react";
+import { Activity, TrendingUp, TrendingDown, Clock, Brain, Loader2, Play, Trash2, AlertTriangle, ChevronDown, Calculator, DollarSign, Percent } from "lucide-react";
 import clsx from "clsx";
 import TradingViewWidget from "@/components/TradingViewWidget";
 import ReactMarkdown from "react-markdown";
+
+function RiskCalculator({ signal }: { signal: any }) {
+  const [banca, setBanca] = useState<number>(1000);
+  const [risco, setRisco] = useState<number>(1);
+  const [alavancagem, setAlavancagem] = useState<number>(10);
+
+  if (!signal.precoEntrada || !signal.stopLoss) return null;
+
+  const entry = Number(signal.precoEntrada);
+  const sl = Number(signal.stopLoss);
+  
+  if (entry === 0 || isNaN(entry) || isNaN(sl)) return null;
+
+  const distPercent = Math.abs((entry - sl) / entry) * 100;
+  if (distPercent === 0) return null;
+
+  const amountToRisk = banca * (risco / 100);
+  const positionSize = amountToRisk / (distPercent / 100);
+  const marginRequired = positionSize / (alavancagem || 1);
+
+  return (
+    <details className="mt-6 bg-neutral-900 border border-neutral-800 rounded-xl overflow-hidden group/calc shadow-lg">
+      <summary className="flex items-center gap-2 p-4 cursor-pointer select-none list-none hover:bg-neutral-800/50 transition-colors">
+        <Calculator className="w-5 h-5 text-indigo-400" />
+        <span className="font-semibold text-neutral-200">Calculadora Automática de Risco</span>
+        <ChevronDown className="w-4 h-4 ml-auto text-neutral-500 group-open/calc:rotate-180 transition-transform" />
+      </summary>
+      <div className="p-4 pt-0 border-t border-neutral-800/50">
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-6 mt-4">
+          <div>
+            <label className="block text-xs text-neutral-400 mb-1 flex items-center gap-1"><DollarSign className="w-3 h-3"/> Banca Total ($)</label>
+            <input type="number" value={banca} onChange={e => setBanca(Number(e.target.value))} className="w-full bg-neutral-950 border border-neutral-800 rounded-lg px-3 py-2 text-white outline-none focus:border-indigo-500 transition-colors" />
+          </div>
+          <div>
+            <label className="block text-xs text-neutral-400 mb-1 flex items-center gap-1"><Percent className="w-3 h-3"/> Risco na Operação (%)</label>
+            <input type="number" step="0.1" value={risco} onChange={e => setRisco(Number(e.target.value))} className="w-full bg-neutral-950 border border-neutral-800 rounded-lg px-3 py-2 text-white outline-none focus:border-indigo-500 transition-colors" />
+          </div>
+          <div>
+            <label className="block text-xs text-neutral-400 mb-1">Alavancagem (x)</label>
+            <input type="number" value={alavancagem} onChange={e => setAlavancagem(Number(e.target.value))} className="w-full bg-neutral-950 border border-neutral-800 rounded-lg px-3 py-2 text-white outline-none focus:border-indigo-500 transition-colors" />
+          </div>
+        </div>
+
+        <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 p-4 bg-neutral-950 rounded-lg border border-neutral-800/50">
+           <div className="flex flex-col">
+             <span className="text-xs text-neutral-500 font-semibold mb-1">Entrada</span>
+             <span className="text-sm font-bold text-white">${entry.toFixed(4)}</span>
+           </div>
+           <div className="flex flex-col">
+             <span className="text-xs text-neutral-500 font-semibold mb-1">Stop Loss</span>
+             <span className="text-sm font-bold text-rose-400">${sl.toFixed(4)} <span className="text-xs text-rose-500/50 ml-1">({distPercent.toFixed(2)}%)</span></span>
+           </div>
+           <div className="flex flex-col">
+             <span className="text-xs text-neutral-500 font-semibold mb-1">Tamanho da Posição</span>
+             <span className="text-sm font-bold text-indigo-400">${positionSize.toFixed(2)}</span>
+           </div>
+           <div className="flex flex-col">
+             <span className="text-xs text-neutral-500 font-semibold mb-1">Margem Exigida ({alavancagem}x)</span>
+             <span className="text-lg font-black text-emerald-400">${marginRequired.toFixed(2)}</span>
+           </div>
+        </div>
+        <p className="text-xs text-neutral-500 mt-4 leading-relaxed">
+          * Para limitar sua perda em exatamente <strong className="text-rose-400">${amountToRisk.toFixed(2)}</strong> caso o mercado atinja o Stop Loss, configure sua posição na corretora para <strong>${positionSize.toFixed(2)}</strong>. Operando em <strong className="text-white">{alavancagem}x</strong>, isso exigirá <strong>${marginRequired.toFixed(2)}</strong> do seu saldo (Margem Inicial).
+        </p>
+      </div>
+    </details>
+  );
+}
 
 export default function Home() {
   const [signals, setSignals] = useState<any[]>([]);
@@ -20,6 +88,7 @@ export default function Home() {
   const [symbol, setSymbol] = useState("BTCUSDT");
   const [interval, setInterval] = useState("15m");
   const [isAnalyzing, setIsAnalyzing] = useState(false);
+  const [filterMode, setFilterMode] = useState("ALL");
 
   // Termômetro Macro (Fase 4)
   const [fng, setFng] = useState<{ value: string; classification: string } | null>(null);
@@ -110,11 +179,25 @@ export default function Home() {
         alert("Erro ao excluir sinal.");
       }
     }
-  }; const groupedSignals = useMemo(() => {
+  };
+
+  const filteredSignals = useMemo(() => {
+    return signals.filter(signal => {
+      if (filterMode === 'ALL') return true;
+      if (filterMode === 'BUY') return signal.action === 'BUY';
+      if (filterMode === 'SELL') return signal.action === 'SELL';
+      if (filterMode === 'HIGH_CONFIDENCE') return signal.score >= 80;
+      if (filterMode === 'OPEN') return !signal.status || signal.status === 'OPEN';
+      if (filterMode === 'WIN') return signal.status?.startsWith('WIN');
+      return true;
+    });
+  }, [signals, filterMode]);
+
+  const groupedSignals = useMemo(() => {
     const groups: { symbol: string; signals: any[] }[] = [];
     const symbolMap = new Map<string, number>();
 
-    signals.forEach((signal) => {
+    filteredSignals.forEach((signal) => {
       if (!symbolMap.has(signal.symbol)) {
         symbolMap.set(signal.symbol, groups.length);
         groups.push({ symbol: signal.symbol, signals: [] });
@@ -124,8 +207,7 @@ export default function Home() {
     });
 
     return groups;
-    return groups;
-  }, [signals]);
+  }, [filteredSignals]);
 
   const stats = useMemo(() => {
     if (!signals.length) return { winRate: 0, wins: 0, losses: 0, open: 0, total: 0, finished: 0 };
@@ -380,9 +462,32 @@ export default function Home() {
 
         {/* Signals Feed */}
         <div className="space-y-4">
-          <h2 className="text-xl font-semibold flex items-center gap-2">
-            <Clock className="w-5 h-5 text-neutral-400" /> Sinais Recentes
-          </h2>
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-2">
+            <h2 className="text-xl font-semibold flex items-center gap-2">
+              <Clock className="w-5 h-5 text-neutral-400" /> Sinais Recentes
+            </h2>
+            <div className="flex flex-wrap gap-2">
+              {['ALL', 'BUY', 'SELL', 'HIGH_CONFIDENCE', 'OPEN', 'WIN'].map((mode) => (
+                <button
+                  key={mode}
+                  onClick={() => setFilterMode(mode)}
+                  className={clsx(
+                    "px-3 py-1.5 text-xs font-bold rounded-lg transition-all border",
+                    filterMode === mode
+                      ? "bg-indigo-600 text-white border-indigo-500 shadow-lg shadow-indigo-500/20"
+                      : "bg-neutral-900 border-neutral-800 text-neutral-400 hover:text-white hover:bg-neutral-800"
+                  )}
+                >
+                  {mode === 'ALL' && "Todos"}
+                  {mode === 'BUY' && "🟢 Compra"}
+                  {mode === 'SELL' && "🔴 Venda"}
+                  {mode === 'HIGH_CONFIDENCE' && "🔥 Alta Confiança (+80%)"}
+                  {mode === 'OPEN' && "⏳ Abertos"}
+                  {mode === 'WIN' && "🏆 Apenas Wins"}
+                </button>
+              ))}
+            </div>
+          </div>
 
           {loadingSignals ? (
             <div className="flex items-center justify-center p-12 text-neutral-500">
@@ -503,6 +608,7 @@ export default function Home() {
                             <span className="text-white line-clamp-1" title={signal.prognostico}>{signal.prognostico || '-'}</span>
                           </div>
                         </div>
+                        <RiskCalculator signal={signal} />
                       </div>
                     ))}
                   </div>
