@@ -1,5 +1,5 @@
 "use client";
-import React, { useEffect, useRef } from 'react';
+import React, { useEffect, useRef, useId } from 'react';
 
 let tvScriptLoadingPromise: Promise<void> | null = null;
 
@@ -9,8 +9,9 @@ interface TradingViewWidgetProps {
 }
 
 export default function TradingViewWidget({ symbol, interval }: TradingViewWidgetProps) {
-  // Gera um ID único para o container para evitar conflitos no React Strict Mode
-  const containerId = useRef(`tv_widget_${Math.random().toString(36).substring(7)}`).current;
+  // usa useId() para gerar um id único que não quebra a hidratação (SSR vs CSR)
+  const baseId = useId();
+  const containerId = `tv_widget_${baseId.replace(/:/g, '')}`;
 
   const mapInterval = (inv: string) => {
     switch(inv) {
