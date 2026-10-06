@@ -9,7 +9,8 @@ interface TradingViewWidgetProps {
 }
 
 export default function TradingViewWidget({ symbol, interval }: TradingViewWidgetProps) {
-  const containerRef = useRef<HTMLDivElement>(null);
+  // Gera um ID único para o container para evitar conflitos no React Strict Mode
+  const containerId = useRef(`tv_widget_${Math.random().toString(36).substring(7)}`).current;
 
   const mapInterval = (inv: string) => {
     switch(inv) {
@@ -25,9 +26,9 @@ export default function TradingViewWidget({ symbol, interval }: TradingViewWidge
     let widget: any = null;
 
     const createWidget = () => {
-      if (containerRef.current && 'TradingView' in window) {
-        // Limpa o container antes de recriar
-        containerRef.current.innerHTML = '';
+      const container = document.getElementById(containerId);
+      if (container && 'TradingView' in window) {
+        container.innerHTML = '';
         widget = new (window as any).TradingView.widget({
           autosize: true,
           symbol: `BINANCE:${symbol}`,
@@ -49,7 +50,7 @@ export default function TradingViewWidget({ symbol, interval }: TradingViewWidge
             "BB@tv-basicstudies",
             "MASimple@tv-basicstudies"
           ],
-          container: containerRef.current, // Usar container ref ao invés de string ID
+          container_id: containerId, // tv.js exige container_id
         });
       }
     };
@@ -70,17 +71,17 @@ export default function TradingViewWidget({ symbol, interval }: TradingViewWidge
     });
 
     return () => {
-      if (widget && widget.remove) {
+      if (widget && typeof widget.remove === 'function') {
         try {
           widget.remove();
         } catch(e) {}
       }
     };
-  }, [symbol, interval]);
+  }, [symbol, interval, containerId]);
 
   return (
     <div className="w-full h-[75vh] min-h-[600px] bg-neutral-950 rounded-xl overflow-hidden border border-neutral-800 shadow-xl relative">
-      <div ref={containerRef} className="w-full h-full" />
+      <div id={containerId} className="w-full h-full" />
     </div>
   );
 }
