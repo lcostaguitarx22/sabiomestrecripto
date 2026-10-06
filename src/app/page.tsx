@@ -5,8 +5,11 @@ import { collection, onSnapshot, query, orderBy, limit, deleteDoc, doc } from "f
 import { db } from "@/lib/firebase/client";
 import { Activity, TrendingUp, TrendingDown, Clock, Brain, Loader2, Play, Trash2, AlertTriangle, ChevronDown, Calculator, DollarSign, Percent } from "lucide-react";
 import clsx from "clsx";
-import TradingViewWidget from "@/components/TradingViewWidget";
+import dynamic from "next/dynamic";
 import ReactMarkdown from "react-markdown";
+
+// Carregando o componente TradingView dinamicamente no lado do cliente (CSR apenas)
+const TradingViewWidget = dynamic(() => import("@/components/TradingViewWidget"), { ssr: false });
 
 function RiskCalculator({ signal }: { signal: any }) {
   const [banca, setBanca] = useState<number>(1000);
