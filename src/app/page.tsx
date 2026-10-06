@@ -92,6 +92,7 @@ export default function Home() {
   const [interval, setInterval] = useState("15m");
   const [isAnalyzing, setIsAnalyzing] = useState(false);
   const [filterMode, setFilterMode] = useState("ALL");
+  const [isEvaluating, setIsEvaluating] = useState(false);
 
   // Termômetro Macro (Fase 4)
   const [fng, setFng] = useState<{ value: string; classification: string } | null>(null);
@@ -223,12 +224,15 @@ export default function Home() {
   }, [signals]);
 
   const handleEvaluate = async () => {
+    setIsEvaluating(true);
     try {
       const res = await fetch("/api/evaluate", { method: "POST" });
       if (res.ok) alert("Validação concluída! Os sinais foram atualizados.");
       else alert("Erro ao validar sinais.");
     } catch (e) {
       alert("Falha na conexão.");
+    } finally {
+      setIsEvaluating(false);
     }
   };
 
@@ -395,9 +399,11 @@ export default function Home() {
               <span className="text-indigo-400 text-sm font-semibold mb-2">Rastreador Automático</span>
               <button 
                 onClick={handleEvaluate}
-                className="text-xs font-bold bg-indigo-600 hover:bg-indigo-500 text-white px-4 py-3 rounded-lg transition-colors flex items-center gap-2 shadow-lg hover:shadow-indigo-500/20"
+                disabled={isEvaluating}
+                className="text-xs font-bold bg-indigo-600 hover:bg-indigo-500 text-white px-4 py-3 rounded-lg transition-colors flex items-center gap-2 shadow-lg hover:shadow-indigo-500/20 disabled:opacity-50 disabled:cursor-not-allowed"
               >
-                <Activity className="w-5 h-5" /> Validar Sinais Agora
+                {isEvaluating ? <Loader2 className="w-5 h-5 animate-spin" /> : <Activity className="w-5 h-5" />}
+                {isEvaluating ? "Validando Sinais..." : "Validar Sinais Agora"}
               </button>
             </div>
           </div>
@@ -509,6 +515,24 @@ export default function Home() {
                     <span className="bg-neutral-800 text-neutral-400 text-xs px-3 py-1 rounded-full font-medium border border-neutral-700/50">
                       {group.signals.length} {group.signals.length === 1 ? 'Análise' : 'Análises'}
                     </span>
+                    {(() => {
+                      const wins = group.signals.filter(s => s.status && s.status.startsWith('WIN')).length;
+                      const losses = group.signals.filter(s => s.status && s.status !== 'OPEN' && !s.status.startsWith('WIN')).length;
+                      return (
+                        <div className="flex gap-2">
+                          {wins > 0 && (
+                            <span className="bg-emerald-500/10 text-emerald-400 text-xs px-2 py-1 rounded-full font-medium border border-emerald-500/20">
+                              {wins} {wins === 1 ? 'WIN' : 'WINS'}
+                            </span>
+                          )}
+                          {losses > 0 && (
+                            <span className="bg-rose-500/10 text-rose-400 text-xs px-2 py-1 rounded-full font-medium border border-rose-500/20">
+                              {losses} {losses === 1 ? 'LOSS' : 'LOSSES'}
+                            </span>
+                          )}
+                        </div>
+                      );
+                    })()}
                     <ChevronDown className="w-5 h-5 ml-auto text-neutral-500 group-open/coin:rotate-180 transition-transform" />
                   </summary>
 
