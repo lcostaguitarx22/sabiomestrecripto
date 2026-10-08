@@ -17,8 +17,8 @@ export async function POST(req: Request) {
 
     console.log(`[API] Iniciando análise para ${symbol} (${interval})`);
 
-    // 1. Buscar Histórico da Binance
-    const klines = await getKlines(symbol, interval, 200);
+    // 1. Buscar Histórico da Binance (1000 candles para dar "warm-up" nas EMAs e RSI e ficar igual ao gráfico)
+    const klines = await getKlines(symbol, interval, 1000);
 
     // 2. Calcular Indicadores Matemáticos
     const indicators = calculateIndicators(klines);
@@ -34,13 +34,17 @@ export async function POST(req: Request) {
       - RSI (14): ${indicators.rsi.toFixed(2)}
       - MACD: Linha ${indicators.macd.MACD?.toFixed(2)}, Sinal ${indicators.macd.signal?.toFixed(2)}, Histograma ${indicators.macd.histogram?.toFixed(2)}
       - Bollinger Bands: Superior $${indicators.bollingerBands.upper.toFixed(2)}, Inferior $${indicators.bollingerBands.lower.toFixed(2)}
-      - SMA (20): $${indicators.sma20.toFixed(2)}
-      - SMA (50): $${indicators.sma50.toFixed(2)}
-      - EMA (20): $${indicators.ema20.toFixed(2)}
+      - EMA (7): $${indicators.ema7.toFixed(4)}
+      - EMA (25): $${indicators.ema25.toFixed(4)}
+      - EMA (99): $${indicators.ema99.toFixed(4)}
+      - EMA (200): $${indicators.ema200.toFixed(4)}
+      - VWAP: $${indicators.vwap.toFixed(4)}
+      - VPVR (Point of Control): $${indicators.vpvrPOC.toFixed(4)}
 
-      **Zonas de Preço Recentes:**
-      - Suporte Base: $${indicators.support.toFixed(2)}
-      - Resistência Base: $${indicators.resistance.toFixed(2)}
+      **Ação de Preço (Price Action):**
+      - Padrões Detectados: ${indicators.patterns.length > 0 ? indicators.patterns.join(", ") : "Nenhum padrão claro"}
+      - Suporte Base (Mínima Recente): $${indicators.support.toFixed(4)}
+      - Resistência Base (Máxima Recente): $${indicators.resistance.toFixed(4)}
     `;
 
     console.log("[API] Indicadores calculados. Chamando IA...");
