@@ -126,7 +126,17 @@ export async function POST(req: Request) {
       // Helper function for regex
       const extractFloat = (regex: RegExp, fallback: number) => {
         const match = aiAnalysis.match(regex);
-        return match ? parseFloat(match[1].replace(/,/g, '')) : fallback;
+        if (!match) return fallback;
+        let strVal = match[1];
+        // Se a string tem ponto e vírgula (ex: 82.750,00), remove o ponto e troca vírgula por ponto.
+        if (strVal.includes('.') && strVal.includes(',')) {
+           strVal = strVal.replace(/\./g, '').replace(',', '.');
+        } 
+        // Se só tem vírgula (ex: 82750,00)
+        else if (strVal.includes(',') && !strVal.includes('.')) {
+           strVal = strVal.replace(',', '.');
+        }
+        return parseFloat(strVal) || fallback;
       };
       const extractString = (regex: RegExp, fallback: string) => {
         const match = aiAnalysis.match(regex);
