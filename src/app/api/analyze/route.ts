@@ -201,7 +201,34 @@ export async function POST(req: Request) {
 
     console.log(`[API] Sinal salvo com sucesso no Firebase. ID: ${docRef.id}`);
 
-    // 6. Retornar Sucesso
+    // 6. Disparo de Telegram para Alta Confiança
+    if ((parsedDecision.action === "BUY" || parsedDecision.action === "SELL") && parsedDecision.confidenceScore >= 80) {
+      const icon = parsedDecision.action === "BUY" ? "🟢" : "🔴";
+      const tgMessage = `
+<b>${icon} NOVO SINAL VIP DETECTADO</b> ${icon}
+<b>Ativo:</b> #${symbol.replace("USDT", "")}
+<b>Operação:</b> ${parsedDecision.action}
+<b>Confiança:</b> ${parsedDecision.confidenceScore}% 🔥
+<b>Tempo Gráfico:</b> ${interval}
+
+<b>Entrada Ideal:</b> $${parsedDecision.precoEntrada}
+<b>Stop Loss:</b> $${parsedDecision.stopLoss}
+<b>Alvos:</b>
+🎯 TP1: $${parsedDecision.takeProfit1}
+🎯 TP2: $${parsedDecision.takeProfit2}
+🚀 TP3: $${parsedDecision.takeProfit3}
+
+<b>R/R Esperado:</b> ${parsedDecision.rr}
+<b>Estratégia:</b> ${parsedDecision.prognostico}
+      `;
+      
+      // Envia em background para não travar a requisição
+      import('@/services/telegram').then(module => {
+        module.sendTelegramAlert(tgMessage.trim());
+      });
+    }
+
+    // 7. Retornar Sucesso
     return NextResponse.json({ success: true, id: docRef.id, data: parsedDecision });
 
   } catch (error: any) {

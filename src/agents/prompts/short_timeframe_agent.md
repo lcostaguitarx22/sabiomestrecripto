@@ -61,6 +61,7 @@ CRITÉRIOS DE RIGOR:
 - Evite especulação: justifique com evidência técnica 
 - Seja honesto sobre incertezas e períodos de consolidação 
 - Sempre indique o cenário alternativo ("se quebrar X, risco de Y") 
+- **CLAREZA E TRADUÇÃO:** Sempre que utilizar jargões técnicos em inglês (ex: Bearish, Choppy, Short-Squeeze, Bullish Engulfing, etc), coloque obrigatoriamente a tradução ou uma explicação curta em português entre parênteses ao lado do termo na primeira vez que ele aparecer.
 
 PROIBIÇÕES: 
 - Não use termos vagos ("parece que...", "talvez...") 
