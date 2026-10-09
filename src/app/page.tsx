@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect, useMemo } from "react";
-import { collection, onSnapshot, query, orderBy, limit, deleteDoc, doc } from "firebase/firestore";
+import { collection, onSnapshot, query, orderBy, limit, deleteDoc, doc, setDoc } from "firebase/firestore";
 import { db } from "@/lib/firebase/client";
 import { Activity, TrendingUp, TrendingDown, Clock, Brain, Loader2, Play, Trash2, AlertTriangle, ChevronDown, Calculator, DollarSign, Percent } from "lucide-react";
 import clsx from "clsx";
@@ -93,6 +93,7 @@ export default function Home() {
   const [isAnalyzing, setIsAnalyzing] = useState(false);
   const [filterMode, setFilterMode] = useState("ALL");
   const [isEvaluating, setIsEvaluating] = useState(false);
+  const [cronEnabled, setCronEnabled] = useState(false);
 
   // Termômetro Macro (Fase 4)
   const [fng, setFng] = useState<{ value: string; classification: string } | null>(null);
@@ -107,6 +108,15 @@ export default function Home() {
       });
       setSignals(fetchedSignals);
       setLoadingSignals(false);
+    });
+
+    // Fetch Cron State
+    const unsubscribeCron = onSnapshot(doc(db, "settings", "cron"), (docSnap) => {
+      if (docSnap.exists()) {
+        setCronEnabled(docSnap.data().isRunning);
+      } else {
+        setCronEnabled(false);
+      }
     });
 
     // Fetch Dynamic Coins
@@ -153,7 +163,10 @@ export default function Home() {
       })
       .catch(console.error);
 
-    return () => unsubscribe();
+    return () => {
+      unsubscribe();
+      unsubscribeCron();
+    };
   }, []);
 
   const handleAnalyze = async () => {
@@ -172,6 +185,14 @@ export default function Home() {
       alert("Falha na conexão com o servidor.");
     } finally {
       setIsAnalyzing(false);
+    }
+  };
+
+  const toggleCron = async () => {
+    try {
+      await setDoc(doc(db, "settings", "cron"), { isRunning: !cronEnabled });
+    } catch (e) {
+      alert("Erro ao alternar o robô.");
     }
   };
 
@@ -347,6 +368,31 @@ export default function Home() {
                     <><Loader2 className="w-5 h-5 animate-spin" /> Analisando...</>
                   ) : (
                     <><Play className="w-5 h-5 fill-current" /> Analisar Agora</>
+                  )}
+                </button>
+              </div>
+
+              {/* Botão do Robô */}
+              <div className="mt-4 pt-4 border-t border-neutral-800 flex items-center justify-between">
+                <div>
+                  <h3 className="text-sm font-semibold text-white flex items-center gap-2">
+                    <Brain className="w-4 h-4 text-emerald-400" /> Robô Autônomo VIP
+                  </h3>
+                  <p className="text-xs text-neutral-500 mt-1">Escaneia BTC, ETH, NEAR, SUI automaticamente.</p>
+                </div>
+                <button
+                  onClick={toggleCron}
+                  className={clsx(
+                    "px-4 py-1.5 rounded-full text-xs font-bold border transition-colors flex items-center gap-2",
+                    cronEnabled 
+                      ? "bg-emerald-500/10 text-emerald-400 border-emerald-500/50 hover:bg-emerald-500/20" 
+                      : "bg-neutral-800 text-neutral-400 border-neutral-700 hover:bg-neutral-700"
+                  )}
+                >
+                  {cronEnabled ? (
+                    <><span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span> ROBÔ: ON</>
+                  ) : (
+                    <><span className="w-2 h-2 rounded-full bg-neutral-500"></span> ROBÔ: OFF</>
                   )}
                 </button>
               </div>
