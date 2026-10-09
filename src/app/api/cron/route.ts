@@ -189,10 +189,14 @@ export async function GET(req: Request) {
         // Disparo Telegram
         if ((action === "BUY" || action === "SELL") && confianca >= 80) {
           const icon = action === "BUY" ? "🟢" : "🔴";
+          const actionText = action === "BUY" ? "BUY (LONG)" : "SELL (SHORT)";
+          const currentTime = new Date().toLocaleTimeString('pt-BR', { timeZone: 'America/Sao_Paulo', hour: '2-digit', minute: '2-digit' });
           const tgMessage = `
-<b>${icon} NOVO SINAL VIP (CRON AUTOMÁTICO)</b> ${icon}
+<b>${icon} NOVO SINAL VIP (MASTER_CRIPTO)</b> ${icon}
+<b>Horário:</b> ${currentTime} | <b>Validade:</b> ${INTERVAL}
+
 <b>Ativo:</b> #${symbol.replace("USDT", "")}
-<b>Operação:</b> ${action}
+<b>Operação:</b> ${actionText}
 <b>Confiança:</b> ${confianca}% 🔥
 <b>Tempo Gráfico:</b> ${INTERVAL}
 

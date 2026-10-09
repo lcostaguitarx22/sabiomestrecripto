@@ -214,10 +214,14 @@ export async function POST(req: Request) {
     // 6. Disparo de Telegram para Alta Confiança
     if ((parsedDecision.action === "BUY" || parsedDecision.action === "SELL") && parsedDecision.confidenceScore >= 80) {
       const icon = parsedDecision.action === "BUY" ? "🟢" : "🔴";
+      const actionText = parsedDecision.action === "BUY" ? "BUY (LONG)" : "SELL (SHORT)";
+      const currentTime = new Date().toLocaleTimeString('pt-BR', { timeZone: 'America/Sao_Paulo', hour: '2-digit', minute: '2-digit' });
       const tgMessage = `
-<b>${icon} NOVO SINAL VIP DETECTADO</b> ${icon}
+<b>${icon} NOVO SINAL VIP (MASTER_CRIPTO)</b> ${icon}
+<b>Horário:</b> ${currentTime} | <b>Validade:</b> ${interval}
+
 <b>Ativo:</b> #${symbol.replace("USDT", "")}
-<b>Operação:</b> ${parsedDecision.action}
+<b>Operação:</b> ${actionText}
 <b>Confiança:</b> ${parsedDecision.confidenceScore}% 🔥
 <b>Tempo Gráfico:</b> ${interval}
 

@@ -75,11 +75,12 @@ export async function evaluateSignals() {
         if (data.score >= 80) { // Só avisa de sinais VIP que foram mandados pro Telegram
           let emoji = newStatus === "LOSS" ? "🚨" : "✅";
           let resultText = newStatus === "LOSS" ? "STOP LOSS ATINGIDO" : `ALVO ALCANÇADO (${newStatus.replace("WIN_", "")})`;
+          const actionText = action === "BUY" ? "BUY (LONG)" : "SELL (SHORT)";
           
           const tgMessage = `
 ${emoji} <b>RESULTADO DA OPERAÇÃO</b> ${emoji}
 <b>Ativo:</b> #${symbol.replace("USDT", "")}
-<b>Operação:</b> ${action}
+<b>Operação:</b> ${actionText}
 <b>Resultado:</b> ${resultText}
           `;
           
