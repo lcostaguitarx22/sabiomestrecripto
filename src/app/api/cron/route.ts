@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { getKlines } from "@/services/binance";
 import { calculateIndicators } from "@/services/indicators";
 import { analyzeScannerData } from "@/services/ai-analyzer";
+import { evaluateSignals } from "../evaluate/route";
 import { db } from "@/lib/firebase/client";
 import { collection, addDoc, getDoc, doc } from "firebase/firestore";
 import fs from "fs";
@@ -213,6 +214,14 @@ export async function GET(req: Request) {
         return { symbol, status: 'success', action, confianca };
       })
     );
+
+    // Chama a auto-avaliação para verificar se alvos dos sinais anteriores foram alcançados
+    try {
+      await evaluateSignals();
+      console.log("[CRON] Auto-avaliação concluída com sucesso.");
+    } catch (e) {
+      console.warn("[CRON] Erro ao auto-avaliar sinais:", e);
+    }
 
     return NextResponse.json({ success: true, results });
 

@@ -13,17 +13,13 @@ async function fetchBinanceKlinesSince(symbol: string, interval: string, startTi
   }
 }
 
-export async function POST() {
-  try {
-    // Busca os últimos 50 sinais gerados
-    const q = query(collection(db, "signals"), orderBy("createdAt", "desc"), limit(50));
-    const snapshot = await getDocs(q);
+export async function evaluateSignals() {
+  const q = query(collection(db, "signals"), orderBy("createdAt", "desc"), limit(50));
+  const snapshot = await getDocs(q);
 
-    if (snapshot.empty) {
-      return NextResponse.json({ success: true, message: "Nenhum sinal encontrado para validar." });
-    }
+  if (snapshot.empty) return 0;
 
-    let updatedCount = 0;
+  let updatedCount = 0;
 
     for (const document of snapshot.docs) {
       const data = document.data();
@@ -74,9 +70,31 @@ export async function POST() {
       if (newStatus !== "OPEN") {
         await updateDoc(doc(db, "signals", document.id), { status: newStatus });
         updatedCount++;
+
+        // Avisar no Telegram sobre o resultado
+        if (data.score >= 80) { // Só avisa de sinais VIP que foram mandados pro Telegram
+          let emoji = newStatus === "LOSS" ? "🚨" : "✅";
+          let resultText = newStatus === "LOSS" ? "STOP LOSS ATINGIDO" : `ALVO ALCANÇADO (${newStatus.replace("WIN_", "")})`;
+          
+          const tgMessage = `
+${emoji} <b>RESULTADO DA OPERAÇÃO</b> ${emoji}
+<b>Ativo:</b> #${symbol.replace("USDT", "")}
+<b>Operação:</b> ${action}
+<b>Resultado:</b> ${resultText}
+          `;
+          
+          const telegram = await import('@/services/telegram');
+          await telegram.sendTelegramAlert(tgMessage.trim());
+        }
       }
     }
 
+  return updatedCount;
+}
+
+export async function POST() {
+  try {
+    const updatedCount = await evaluateSignals();
     return NextResponse.json({ success: true, updatedCount });
   } catch (error: any) {
     console.error("Evaluate error:", error);
