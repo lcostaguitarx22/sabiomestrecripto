@@ -94,6 +94,7 @@ export default function Home() {
   const [filterMode, setFilterMode] = useState("ALL");
   const [isEvaluating, setIsEvaluating] = useState(false);
   const [cronEnabled, setCronEnabled] = useState(false);
+  const [cronCoins, setCronCoins] = useState<string[]>(["BTCUSDT", "ETHUSDT", "NEARUSDT", "SUIUSDT"]);
 
   // Termômetro Macro (Fase 4)
   const [fng, setFng] = useState<{ value: string; classification: string } | null>(null);
@@ -113,7 +114,11 @@ export default function Home() {
     // Fetch Cron State
     const unsubscribeCron = onSnapshot(doc(db, "settings", "cron"), (docSnap) => {
       if (docSnap.exists()) {
-        setCronEnabled(docSnap.data().isRunning);
+        const data = docSnap.data();
+        setCronEnabled(data.isRunning);
+        if (data.coins && Array.isArray(data.coins)) {
+          setCronCoins(data.coins);
+        }
       } else {
         setCronEnabled(false);
       }
@@ -190,9 +195,29 @@ export default function Home() {
 
   const toggleCron = async () => {
     try {
-      await setDoc(doc(db, "settings", "cron"), { isRunning: !cronEnabled });
+      await setDoc(doc(db, "settings", "cron"), { isRunning: !cronEnabled, coins: cronCoins }, { merge: true });
     } catch (e) {
       alert("Erro ao alternar o robô.");
+    }
+  };
+
+  const addCronCoin = async (coinToAdd: string) => {
+    if (!cronCoins.includes(coinToAdd)) {
+      const newCoins = [...cronCoins, coinToAdd];
+      try {
+        await setDoc(doc(db, "settings", "cron"), { isRunning: cronEnabled, coins: newCoins }, { merge: true });
+      } catch (e) {
+        alert("Erro ao adicionar moeda.");
+      }
+    }
+  };
+
+  const removeCronCoin = async (coinToRemove: string) => {
+    const newCoins = cronCoins.filter(c => c !== coinToRemove);
+    try {
+      await setDoc(doc(db, "settings", "cron"), { isRunning: cronEnabled, coins: newCoins }, { merge: true });
+    } catch (e) {
+      alert("Erro ao remover moeda.");
     }
   };
 
@@ -373,28 +398,57 @@ export default function Home() {
               </div>
 
               {/* Botão do Robô */}
-              <div className="mt-4 pt-4 border-t border-neutral-800 flex items-center justify-between">
-                <div>
-                  <h3 className="text-sm font-semibold text-white flex items-center gap-2">
-                    <Brain className="w-4 h-4 text-emerald-400" /> Robô Autônomo VIP
-                  </h3>
-                  <p className="text-xs text-neutral-500 mt-1">Escaneia BTC, ETH, NEAR, SUI automaticamente.</p>
+              <div className="mt-4 pt-4 border-t border-neutral-800 flex flex-col gap-3">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <h3 className="text-sm font-semibold text-white flex items-center gap-2">
+                      <Brain className="w-4 h-4 text-emerald-400" /> Robô Autônomo VIP
+                    </h3>
+                    <p className="text-xs text-neutral-500 mt-1">Escaneia automaticamente as moedas selecionadas.</p>
+                  </div>
+                  <button
+                    onClick={toggleCron}
+                    className={clsx(
+                      "px-4 py-1.5 rounded-full text-xs font-bold border transition-colors flex items-center gap-2",
+                      cronEnabled 
+                        ? "bg-emerald-500/10 text-emerald-400 border-emerald-500/50 hover:bg-emerald-500/20" 
+                        : "bg-neutral-800 text-neutral-400 border-neutral-700 hover:bg-neutral-700"
+                    )}
+                  >
+                    {cronEnabled ? (
+                      <><span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span> ROBÔ: ON</>
+                    ) : (
+                      <><span className="w-2 h-2 rounded-full bg-neutral-500"></span> ROBÔ: OFF</>
+                    )}
+                  </button>
                 </div>
-                <button
-                  onClick={toggleCron}
-                  className={clsx(
-                    "px-4 py-1.5 rounded-full text-xs font-bold border transition-colors flex items-center gap-2",
-                    cronEnabled 
-                      ? "bg-emerald-500/10 text-emerald-400 border-emerald-500/50 hover:bg-emerald-500/20" 
-                      : "bg-neutral-800 text-neutral-400 border-neutral-700 hover:bg-neutral-700"
-                  )}
-                >
-                  {cronEnabled ? (
-                    <><span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span> ROBÔ: ON</>
-                  ) : (
-                    <><span className="w-2 h-2 rounded-full bg-neutral-500"></span> ROBÔ: OFF</>
-                  )}
-                </button>
+
+                {/* Lista de Moedas do Cron */}
+                <div className="flex flex-wrap gap-2 items-center">
+                  {cronCoins.map(c => (
+                    <span key={c} className="flex items-center gap-1 bg-neutral-800/80 text-xs px-2 py-1 rounded border border-neutral-700 text-neutral-300">
+                      {c.replace("USDT", "")}
+                      <button onClick={() => removeCronCoin(c)} className="hover:text-red-400 ml-1 text-neutral-500 font-bold">&times;</button>
+                    </span>
+                  ))}
+                  
+                  <select 
+                    className="bg-neutral-800 text-xs border border-neutral-700 rounded px-2 py-1 text-neutral-400 outline-none hover:border-neutral-600 cursor-pointer"
+                    onChange={(e) => {
+                      if (e.target.value) {
+                        addCronCoin(e.target.value);
+                        e.target.value = ""; // Reset
+                      }
+                    }}
+                  >
+                    <option value="">+ Adicionar</option>
+                    {["BTCUSDT", "ETHUSDT", "SOLUSDT", "NEARUSDT", "BNBUSDT", "ADAUSDT", "DOGEUSDT", "AVAXUSDT", "XRPUSDT", "SUIUSDT", "HYPEUSDT", "ZECUSDT", "LINKUSDT"]
+                      .filter(c => !cronCoins.includes(c))
+                      .map(c => (
+                      <option key={c} value={c}>{c.replace("USDT", "")}</option>
+                    ))}
+                  </select>
+                </div>
               </div>
 
               {/* Shortcuts */}

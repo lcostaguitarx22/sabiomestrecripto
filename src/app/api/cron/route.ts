@@ -8,22 +8,29 @@ import { collection, addDoc, getDoc, doc } from "firebase/firestore";
 import fs from "fs";
 import path from "path";
 
-// Array de moedas que o robô vai varrer automaticamente
-const TARGET_COINS = ["BTCUSDT", "ETHUSDT", "NEARUSDT", "SUIUSDT"];
-const INTERVAL = "1h"; // Timeframe padrão para o bot autônomo
+// Timeframe padrão para o bot autônomo
+const INTERVAL = "1h"; 
 
 export async function GET(req: Request) {
   try {
-    // Verifica se o robô está ligado no painel
+    // Verifica se o robô está ligado no painel e pega as moedas configuradas
     const cronDoc = await getDoc(doc(db, "settings", "cron"));
-    if (cronDoc.exists() && cronDoc.data().isRunning === false) {
-      console.log("[CRON] Robô está desligado no painel. Abortando execução.");
-      return NextResponse.json({ success: true, message: "Robô em modo OFF." });
+    let targetCoins = ["BTCUSDT", "ETHUSDT", "NEARUSDT", "SUIUSDT"];
+
+    if (cronDoc.exists()) {
+      const data = cronDoc.data();
+      if (data.isRunning === false) {
+        console.log("[CRON] Robô está desligado no painel. Abortando execução.");
+        return NextResponse.json({ success: true, message: "Robô em modo OFF." });
+      }
+      if (data.coins && Array.isArray(data.coins) && data.coins.length > 0) {
+        targetCoins = data.coins;
+      }
     }
 
     // Para evitar timeout na Vercel (10s), rodamos as promessas em paralelo
     const results = await Promise.allSettled(
-      TARGET_COINS.map(async (symbol) => {
+      targetCoins.map(async (symbol) => {
         console.log(`[CRON] Iniciando scan autônomo para ${symbol}`);
         
         const klines = await getKlines(symbol, INTERVAL, 1000);
