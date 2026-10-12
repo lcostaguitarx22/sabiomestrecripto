@@ -9,7 +9,7 @@ import fs from "fs";
 import path from "path";
 
 // Timeframe padrão para o bot autônomo
-const INTERVAL = "1h"; 
+const INTERVAL = "1h";
 
 export async function GET(req: Request) {
   try {
@@ -32,7 +32,7 @@ export async function GET(req: Request) {
     const results = await Promise.allSettled(
       targetCoins.map(async (symbol) => {
         console.log(`[CRON] Iniciando scan autônomo para ${symbol}`);
-        
+
         const klines = await getKlines(symbol, INTERVAL, 1000);
         const indicators = calculateIndicators(klines);
 
@@ -133,10 +133,10 @@ export async function GET(req: Request) {
             if (!match) return fallback;
             let strVal = match[1];
             if (strVal.includes('.') && strVal.includes(',')) {
-               strVal = strVal.replace(/\./g, '').replace(',', '.');
-            } 
+              strVal = strVal.replace(/\./g, '').replace(',', '.');
+            }
             else if (strVal.includes(',') && !strVal.includes('.')) {
-               strVal = strVal.replace(',', '.');
+              strVal = strVal.replace(',', '.');
             }
             return parseFloat(strVal) || fallback;
           };
@@ -159,7 +159,7 @@ export async function GET(req: Request) {
           takeProfit1 = extractFloat(/\*\*Take Profit 1:\*\*\s*\$?\s*([\d,.]+)/i, takeProfit1);
           takeProfit2 = extractFloat(/\*\*Take Profit 2:\*\*\s*\$?\s*([\d,.]+)/i, takeProfit2);
           takeProfit3 = extractFloat(/\*\*Take Profit 3:\*\*\s*\$?\s*([\d,.]+)/i, takeProfit3);
-          
+
           rr = extractString(/\*\*R\/R:\*\*\s*(.+)/i, rr);
           tipoOrdem = extractString(/\*\*Tipo de Ordem:\*\*\s*(.+)/i, tipoOrdem);
           tendencia = extractString(/\*\*Tendência:\*\*\s*(.+)/i, tendencia);
@@ -217,11 +217,11 @@ export async function GET(req: Request) {
 <b>R/R Esperado:</b> ${rr}
 <b>Estratégia:</b> ${prognostico}
           `;
-          
+
           const telegram = await import('@/services/telegram');
           await telegram.sendTelegramAlert(tgMessage.trim());
         }
-        
+
         return { symbol, status: 'success', action, confianca };
       })
     );

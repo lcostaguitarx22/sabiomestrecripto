@@ -3,7 +3,7 @@
 import { useState, useEffect, useMemo } from "react";
 import { collection, onSnapshot, query, orderBy, limit, deleteDoc, doc, setDoc } from "firebase/firestore";
 import { db } from "@/lib/firebase/client";
-import { Activity, TrendingUp, TrendingDown, Clock, Brain, Loader2, Play, Trash2, AlertTriangle, ChevronDown, Calculator, DollarSign, Percent } from "lucide-react";
+import { Activity, TrendingUp, TrendingDown, Clock, Brain, Loader2, Play, Trash2, AlertTriangle, ChevronDown, Calculator, DollarSign, Percent, Sparkles, Rocket, ExternalLink } from "lucide-react";
 import clsx from "clsx";
 import dynamic from "next/dynamic";
 import ReactMarkdown from "react-markdown";
@@ -96,6 +96,11 @@ export default function Home() {
   const [cronEnabled, setCronEnabled] = useState(false);
   const [cronCoins, setCronCoins] = useState<string[]>(["BTCUSDT", "ETHUSDT", "NEARUSDT", "SUIUSDT"]);
 
+  // CoinGecko Radar
+  const [trendingGems, setTrendingGems] = useState<any[]>([]);
+  const [loadingGems, setLoadingGems] = useState(false);
+  const [lastGemsUpdate, setLastGemsUpdate] = useState<string | null>(null);
+
   // Termômetro Macro (Fase 4)
   const [fng, setFng] = useState<{ value: string; classification: string } | null>(null);
   const [btcTicker, setBtcTicker] = useState<{ price: string; change: string } | null>(null);
@@ -172,7 +177,25 @@ export default function Home() {
       unsubscribe();
       unsubscribeCron();
     };
+    // Fetch Initial Radar Gems
+    fetchRadarGems();
   }, []);
+
+  const fetchRadarGems = async () => {
+    setLoadingGems(true);
+    try {
+      const res = await fetch("/api/radar-gems");
+      const json = await res.json();
+      if (json.success && json.data) {
+        setTrendingGems(json.data);
+        setLastGemsUpdate(new Date().toLocaleTimeString("pt-BR", { hour: "2-digit", minute: "2-digit" }));
+      }
+    } catch (e) {
+      console.error("Erro ao carregar radar CoinGecko:", e);
+    } finally {
+      setLoadingGems(false);
+    }
+  };
 
   const handleAnalyze = async () => {
     setIsAnalyzing(true);
@@ -560,6 +583,178 @@ export default function Home() {
             </div>
           </div>
         </details>
+
+        {/* Radar de Gemas & Explosões (CoinGecko) */}
+        <section className="bg-neutral-900 border border-neutral-800 rounded-xl p-5 shadow-xl">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-4 pb-3 border-b border-neutral-800">
+            <div className="flex items-center gap-3">
+              <div className="p-2 rounded-lg bg-amber-500/10 text-amber-400 border border-amber-500/20">
+                <Rocket className="w-5 h-5" />
+              </div>
+              <div>
+                <h2 className="text-lg font-bold text-white flex items-center gap-2">
+                  Radar CoinGecko • Oportunidades & Gemas
+                  <span className="text-xs bg-amber-500/20 text-amber-300 px-2 py-0.5 rounded font-mono font-medium">Trending Global</span>
+                </h2>
+                <p className="text-xs text-neutral-400">
+                  Moedas mais buscadas no mundo agora com potencial de explosão nos próximos dias/semanas.
+                </p>
+              </div>
+            </div>
+
+            <div className="flex items-center gap-3 self-end sm:self-center">
+              {lastGemsUpdate && (
+                <span className="text-xs text-neutral-500 font-mono">
+                  Atualizado às {lastGemsUpdate}
+                </span>
+              )}
+              <button
+                onClick={fetchRadarGems}
+                disabled={loadingGems}
+                className="flex items-center gap-1.5 px-3 py-1.5 bg-neutral-800 hover:bg-neutral-700 text-neutral-300 hover:text-white rounded-lg text-xs font-semibold transition-colors disabled:opacity-50"
+              >
+                <Sparkles className={clsx("w-3.5 h-3.5 text-amber-400", loadingGems && "animate-spin")} />
+                {loadingGems ? "Atualizando..." : "Escanear Radar"}
+              </button>
+            </div>
+          </div>
+
+          {loadingGems && trendingGems.length === 0 ? (
+            <div className="flex items-center justify-center py-10 text-neutral-500 gap-2 text-sm">
+              <Loader2 className="w-5 h-5 animate-spin text-amber-400" />
+              Rastreando tendências mundiais no CoinGecko...
+            </div>
+          ) : trendingGems.length === 0 ? (
+            <div className="text-center py-8 text-neutral-500 text-xs">
+              Nenhuma gema detectada no momento. Clique em "Escanear Radar" para atualizar.
+            </div>
+          ) : (
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-3">
+              {trendingGems.slice(0, 10).map((gem) => {
+                const isSelected = symbol === gem.binancePair;
+                const isInCron = cronCoins.includes(gem.binancePair);
+
+                return (
+                  <div
+                    key={gem.id}
+                    className={clsx(
+                      "bg-neutral-950/60 border rounded-xl p-3.5 flex flex-col justify-between transition-all hover:border-neutral-700 relative group",
+                      gem.availableOnBinance
+                        ? "border-neutral-800/80 hover:shadow-lg hover:shadow-amber-500/5"
+                        : "border-neutral-800/40 opacity-80"
+                    )}
+                  >
+                    <div>
+                      {/* Top Row: Coin info & Rank */}
+                      <div className="flex items-center justify-between gap-2 mb-2">
+                        <div className="flex items-center gap-2 min-w-0">
+                          {gem.thumb ? (
+                            <img src={gem.thumb} alt={gem.name} className="w-6 h-6 rounded-full flex-shrink-0" />
+                          ) : (
+                            <div className="w-6 h-6 rounded-full bg-neutral-800 flex-shrink-0" />
+                          )}
+                          <div className="min-w-0">
+                            <h4 className="text-xs font-bold text-white truncate">{gem.name}</h4>
+                            <span className="text-[10px] text-neutral-400 font-mono block uppercase">{gem.symbol}</span>
+                          </div>
+                        </div>
+
+                        {gem.marketCapRank && (
+                          <span className="text-[10px] font-mono text-neutral-500 bg-neutral-900 border border-neutral-800 px-1.5 py-0.5 rounded flex-shrink-0">
+                            #{gem.marketCapRank}
+                          </span>
+                        )}
+                      </div>
+
+                      {/* Middle Row: Price & 24h Change */}
+                      <div className="flex items-baseline justify-between mt-2 pt-2 border-t border-neutral-900">
+                        <span className="text-xs font-mono font-bold text-neutral-200">
+                          ${typeof gem.priceUsd === "number" && gem.priceUsd < 0.01 
+                            ? gem.priceUsd.toFixed(6) 
+                            : typeof gem.priceUsd === "number" 
+                              ? gem.priceUsd.toFixed(3) 
+                              : gem.priceUsd}
+                        </span>
+                        <span
+                          className={clsx(
+                            "text-[11px] font-bold px-1.5 py-0.5 rounded",
+                            gem.change24h >= 0
+                              ? "bg-emerald-500/10 text-emerald-400"
+                              : "bg-rose-500/10 text-rose-400"
+                          )}
+                        >
+                          {gem.change24h >= 0 ? "+" : ""}{gem.change24h}%
+                        </span>
+                      </div>
+
+                      {/* Score de Potencial & Badge Binance */}
+                      <div className="mt-2.5 flex items-center justify-between gap-1">
+                        <div className="flex items-center gap-1">
+                          <span className="text-[10px] text-neutral-500">Potencial:</span>
+                          <span className="text-[10px] font-bold text-amber-400">{gem.potentialScore}%</span>
+                        </div>
+                        {gem.availableOnBinance ? (
+                          <span className="text-[9px] font-bold bg-yellow-500/10 text-yellow-400 border border-yellow-500/30 px-1.5 py-0.2 rounded">
+                            BINANCE
+                          </span>
+                        ) : (
+                          <span className="text-[9px] text-neutral-500 bg-neutral-900 px-1.5 py-0.2 rounded">
+                            DEX / OUTRAS
+                          </span>
+                        )}
+                      </div>
+                    </div>
+
+                    {/* Actions Row */}
+                    <div className="mt-3 pt-2.5 border-t border-neutral-900 flex items-center gap-2">
+                      {gem.availableOnBinance ? (
+                        <>
+                          <button
+                            onClick={() => setSymbol(gem.binancePair)}
+                            className={clsx(
+                              "flex-1 py-1 text-[11px] font-medium rounded transition-colors text-center border",
+                              isSelected
+                                ? "bg-indigo-600 text-white border-indigo-500"
+                                : "bg-neutral-900 hover:bg-neutral-800 text-neutral-300 border-neutral-800"
+                            )}
+                            title="Carregar gráfico e analisar"
+                          >
+                            {isSelected ? "Selecionada" : "Analisar"}
+                          </button>
+
+                          <button
+                            onClick={() => {
+                              if (isInCron) removeCronCoin(gem.binancePair);
+                              else addCronCoin(gem.binancePair);
+                            }}
+                            className={clsx(
+                              "px-2 py-1 text-[11px] font-bold rounded transition-colors border",
+                              isInCron
+                                ? "bg-emerald-500/20 text-emerald-400 border-emerald-500/40"
+                                : "bg-neutral-900 hover:bg-neutral-800 text-neutral-400 hover:text-white border-neutral-800"
+                            )}
+                            title={isInCron ? "Remover do Robô Telegram" : "Adicionar ao Robô Telegram"}
+                          >
+                            {isInCron ? "No Robô ✓" : "+ Robô"}
+                          </button>
+                        </>
+                      ) : (
+                        <a
+                          href={`https://www.coingecko.com/en/coins/${gem.id}`}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="w-full py-1 text-[11px] font-medium rounded bg-neutral-900 hover:bg-neutral-800 text-neutral-400 hover:text-neutral-200 border border-neutral-800 text-center flex items-center justify-center gap-1"
+                        >
+                          Ver no CoinGecko <ExternalLink className="w-3 h-3" />
+                        </a>
+                      )}
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          )}
+        </section>
 
         {/* Real-Time Chart */}
         <div className="mt-8">
