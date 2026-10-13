@@ -6,6 +6,7 @@ import { calculateIndicators } from "@/services/indicators";
 import { analyzeScannerData } from "@/services/ai-analyzer";
 import { db } from "@/lib/firebase/client";
 import { collection, addDoc } from "firebase/firestore";
+import { getNextSignalId } from "@/services/signal-id";
 
 export async function POST(req: Request) {
   try {
@@ -182,8 +183,11 @@ export async function POST(req: Request) {
       message
     };
 
-    // 5. Salvar no Firebase
+    // 5. Salvar no Firebase com ID sequencial (0000 a 9999)
+    const signalId = await getNextSignalId();
+
     const docRef = await addDoc(collection(db, "signals"), {
+      signalId,
       symbol,
       interval,
       price: indicators.currentPrice,
@@ -209,7 +213,7 @@ export async function POST(req: Request) {
       createdAt: new Date().toISOString()
     });
 
-    console.log(`[API] Sinal salvo com sucesso no Firebase. ID: ${docRef.id}`);
+    console.log(`[API] Sinal salvo com sucesso no Firebase. ID Doc: ${docRef.id} | Signal ID: #${signalId}`);
 
     // 6. Disparo de Telegram para Alta Confiança
     let telegramSent = false;
@@ -220,6 +224,7 @@ export async function POST(req: Request) {
       const sourceBadge = source === "robot" ? " (ROBÔ SCAN)" : "";
       const tgMessage = `
 <b>${icon} NOVO SINAL VIP (MASTER_CRIPTO)${sourceBadge}</b> ${icon}
+<b>ID da Ordem:</b> #${signalId}
 <b>Horário:</b> ${currentTime} | <b>Validade:</b> ${interval}
 
 <b>Ativo:</b> #${symbol.replace("USDT", "")}
@@ -247,7 +252,7 @@ export async function POST(req: Request) {
     }
 
     // 7. Retornar Sucesso
-    return NextResponse.json({ success: true, id: docRef.id, data: parsedDecision, telegramSent });
+    return NextResponse.json({ success: true, id: docRef.id, signalId, data: parsedDecision, telegramSent });
 
   } catch (error: any) {
     console.error("[API Analyze] Erro interno:", error);

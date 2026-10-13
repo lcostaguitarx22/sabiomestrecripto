@@ -3,6 +3,7 @@ import { collection, addDoc } from 'firebase/firestore';
 import { db } from '@/lib/firebase/client';
 import { analyzeSignal } from '@/services/ai-analyzer';
 import { getSymbolPrice } from '@/services/binance';
+import { getNextSignalId } from '@/services/signal-id';
 
 // Webhook payload type from TradingView
 interface TradingViewPayload {
@@ -37,8 +38,11 @@ export async function POST(request: Request) {
       payload.message
     );
 
-    // 3. Save the result to Firebase Firestore (Using Client SDK instead of Admin SDK)
+    // 3. Save the result to Firebase Firestore
+    const signalId = await getNextSignalId();
+
     const signalData = {
+      signalId,
       symbol: payload.symbol,
       action: payload.action,
       price: currentPrice,
@@ -50,7 +54,7 @@ export async function POST(request: Request) {
 
     const docRef = await addDoc(collection(db, 'signals'), signalData);
 
-    return NextResponse.json({ success: true, id: docRef.id, data: signalData }, { status: 201 });
+    return NextResponse.json({ success: true, id: docRef.id, signalId, data: signalData }, { status: 201 });
   } catch (error) {
     console.error('Error processing TradingView Webhook:', error);
     return NextResponse.json({ error: 'Internal Server Error' }, { status: 500 });

@@ -76,10 +76,11 @@ export async function evaluateSignals() {
           let emoji = newStatus === "LOSS" ? "🚨" : "✅";
           let resultText = newStatus === "LOSS" ? "STOP LOSS ATINGIDO" : `ALVO ALCANÇADO (${newStatus.replace("WIN_", "")})`;
           const actionText = action === "BUY" ? "BUY (LONG)" : "SELL (SHORT)";
+          const orderIdLine = data.signalId ? `<b>ID da Ordem:</b> #${data.signalId}\n` : "";
           
           const tgMessage = `
 ${emoji} <b>RESULTADO DA OPERAÇÃO</b> ${emoji}
-<b>Ativo:</b> #${symbol.replace("USDT", "")}
+${orderIdLine}<b>Ativo:</b> #${symbol.replace("USDT", "")}
 <b>Operação:</b> ${actionText}
 <b>Resultado:</b> ${resultText}
           `;

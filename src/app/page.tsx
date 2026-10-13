@@ -981,10 +981,15 @@ export default function Home() {
             {group.signals.map((signal) => (
               <div key={signal.id} className="bg-neutral-900 border border-neutral-800 rounded-xl p-6 shadow-lg hover:border-neutral-700 transition-colors">
                 <div className="flex justify-between items-start mb-4">
-                  <div>
+                  <div className="flex items-center gap-2">
                     <span className="text-sm text-neutral-500 flex items-center gap-2">
                       <Clock className="w-4 h-4" /> {new Date(signal.createdAt).toLocaleString()} • {signal.interval}
                     </span>
+                    {signal.signalId && (
+                      <span className="bg-indigo-500/10 text-indigo-400 font-mono text-xs px-2.5 py-0.5 rounded font-bold border border-indigo-500/30">
+                        #{signal.signalId}
+                      </span>
+                    )}
                   </div>
                   <div className="flex items-center gap-3">
                     <div className={clsx(
@@ -1070,6 +1075,10 @@ export default function Home() {
                   <div className="bg-neutral-950 p-3 rounded-lg border border-neutral-800/50">
                     <span className="text-neutral-500 block text-xs uppercase tracking-wider mb-1">Tendência</span>
                     <span className="text-white">{signal.tendencia || '-'}</span>
+                  </div>
+                  <div className="bg-neutral-950 p-3 rounded-lg border border-neutral-800/50">
+                    <span className="text-neutral-500 block text-xs uppercase tracking-wider mb-1">ID da Ordem</span>
+                    <span className="font-mono text-indigo-400 font-bold">#{signal.signalId || signal.id.slice(0, 4)}</span>
                   </div>
                   <div className="bg-neutral-950 p-3 rounded-lg border border-neutral-800/50">
                     <span className="text-neutral-500 block text-xs uppercase tracking-wider mb-1">Prognóstico</span>

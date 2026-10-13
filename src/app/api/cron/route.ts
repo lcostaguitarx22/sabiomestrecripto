@@ -5,6 +5,7 @@ import { analyzeScannerData } from "@/services/ai-analyzer";
 import { evaluateSignals } from "../evaluate/route";
 import { db } from "@/lib/firebase/client";
 import { collection, addDoc, getDoc, doc } from "firebase/firestore";
+import { getNextSignalId } from "@/services/signal-id";
 import fs from "fs";
 import path from "path";
 
@@ -167,7 +168,10 @@ export async function GET(req: Request) {
         }
 
         // Salvar no Firebase
+        const signalId = await getNextSignalId();
+
         await addDoc(collection(db, "signals"), {
+          signalId,
           symbol,
           interval: INTERVAL,
           price: indicators.currentPrice,
@@ -200,6 +204,7 @@ export async function GET(req: Request) {
           const currentTime = new Date().toLocaleTimeString('pt-BR', { timeZone: 'America/Sao_Paulo', hour: '2-digit', minute: '2-digit' });
           const tgMessage = `
 <b>${icon} NOVO SINAL VIP (MASTER_CRIPTO)</b> ${icon}
+<b>ID da Ordem:</b> #${signalId}
 <b>Horário:</b> ${currentTime} | <b>Validade:</b> ${INTERVAL}
 
 <b>Ativo:</b> #${symbol.replace("USDT", "")}
