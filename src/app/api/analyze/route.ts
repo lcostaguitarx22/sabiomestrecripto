@@ -9,7 +9,7 @@ import { collection, addDoc } from "firebase/firestore";
 
 export async function POST(req: Request) {
   try {
-    const { symbol, interval } = await req.json();
+    const { symbol, interval, source } = await req.json();
 
     if (!symbol || !interval) {
       return NextResponse.json({ error: "Faltam parâmetros: symbol, interval" }, { status: 400 });
@@ -212,12 +212,14 @@ export async function POST(req: Request) {
     console.log(`[API] Sinal salvo com sucesso no Firebase. ID: ${docRef.id}`);
 
     // 6. Disparo de Telegram para Alta Confiança
+    let telegramSent = false;
     if ((parsedDecision.action === "BUY" || parsedDecision.action === "SELL") && parsedDecision.confidenceScore >= 80) {
       const icon = parsedDecision.action === "BUY" ? "🟢" : "🔴";
       const actionText = parsedDecision.action === "BUY" ? "BUY (LONG)" : "SELL (SHORT)";
       const currentTime = new Date().toLocaleTimeString('pt-BR', { timeZone: 'America/Sao_Paulo', hour: '2-digit', minute: '2-digit' });
+      const sourceBadge = source === "robot" ? " (ROBÔ SCAN)" : "";
       const tgMessage = `
-<b>${icon} NOVO SINAL VIP (MASTER_CRIPTO)</b> ${icon}
+<b>${icon} NOVO SINAL VIP (MASTER_CRIPTO)${sourceBadge}</b> ${icon}
 <b>Horário:</b> ${currentTime} | <b>Validade:</b> ${interval}
 
 <b>Ativo:</b> #${symbol.replace("USDT", "")}
@@ -236,14 +238,16 @@ export async function POST(req: Request) {
 <b>Estratégia:</b> ${parsedDecision.prognostico}
       `;
       
-      // Envia em background para não travar a requisição
-      import('@/services/telegram').then(module => {
-        module.sendTelegramAlert(tgMessage.trim());
-      });
+      try {
+        const { sendTelegramAlert } = await import('@/services/telegram');
+        telegramSent = await sendTelegramAlert(tgMessage.trim());
+      } catch (tgErr) {
+        console.error("[API Analyze] Erro ao enviar Telegram:", tgErr);
+      }
     }
 
     // 7. Retornar Sucesso
-    return NextResponse.json({ success: true, id: docRef.id, data: parsedDecision });
+    return NextResponse.json({ success: true, id: docRef.id, data: parsedDecision, telegramSent });
 
   } catch (error: any) {
     console.error("[API Analyze] Erro interno:", error);

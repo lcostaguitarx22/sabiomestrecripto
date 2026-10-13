@@ -4,7 +4,7 @@ export async function sendTelegramAlert(message: string) {
 
   if (!token || !chatId) {
     console.warn("[Telegram] Token ou Chat ID não configurados. Alerta não enviado.");
-    return;
+    return false;
   }
 
   const url = `https://api.telegram.org/bot${token}/sendMessage`;
@@ -23,10 +23,13 @@ export async function sendTelegramAlert(message: string) {
     if (!response.ok) {
       const err = await response.text();
       console.error("[Telegram] Falha ao enviar mensagem:", err);
+      return false;
     } else {
       console.log("[Telegram] Alerta enviado com sucesso!");
+      return true;
     }
   } catch (error) {
     console.error("[Telegram] Erro na requisição:", error);
+    return false;
   }
 }
