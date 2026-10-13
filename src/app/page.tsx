@@ -516,8 +516,8 @@ export default function Home() {
                         isRobotScanning
                           ? "bg-indigo-600/60 text-indigo-200 cursor-not-allowed"
                           : cronCoins.length === 0
-                          ? "bg-neutral-800 text-neutral-500 cursor-not-allowed"
-                          : "bg-emerald-600 hover:bg-emerald-500 text-white shadow-emerald-600/20 active:scale-95 hover:shadow-lg"
+                            ? "bg-neutral-800 text-neutral-500 cursor-not-allowed"
+                            : "bg-emerald-600 hover:bg-emerald-500 text-white shadow-emerald-600/20 active:scale-95 hover:shadow-lg"
                       )}
                       title="Escanear as moedas selecionadas com IA e enviar sinais (≥80%) ao Telegram"
                     >
@@ -533,8 +533,8 @@ export default function Home() {
                       onClick={toggleCron}
                       className={clsx(
                         "px-4 py-1.5 rounded-full text-xs font-bold border transition-colors flex items-center gap-2",
-                        cronEnabled 
-                          ? "bg-emerald-500/10 text-emerald-400 border-emerald-500/50 hover:bg-emerald-500/20" 
+                        cronEnabled
+                          ? "bg-emerald-500/10 text-emerald-400 border-emerald-500/50 hover:bg-emerald-500/20"
                           : "bg-neutral-800 text-neutral-400 border-neutral-700 hover:bg-neutral-700"
                       )}
                     >
@@ -557,8 +557,8 @@ export default function Home() {
                       <button onClick={() => removeCronCoin(c)} className="hover:text-red-400 ml-1 text-neutral-500 font-bold" title={`Remover ${c.replace("USDT", "")}`}>&times;</button>
                     </span>
                   ))}
-                  
-                  <select 
+
+                  <select
                     className="bg-neutral-800 text-xs border border-neutral-700 rounded px-2.5 py-1 text-neutral-400 outline-none hover:border-neutral-600 cursor-pointer"
                     onChange={(e) => {
                       if (e.target.value) {
@@ -571,8 +571,8 @@ export default function Home() {
                     {["BTCUSDT", "ETHUSDT", "SOLUSDT", "NEARUSDT", "BNBUSDT", "ADAUSDT", "DOGEUSDT", "AVAXUSDT", "XRPUSDT", "SUIUSDT", "HYPEUSDT", "ZECUSDT", "LINKUSDT"]
                       .filter(c => !cronCoins.includes(c))
                       .map(c => (
-                      <option key={c} value={c}>{c.replace("USDT", "")}</option>
-                    ))}
+                        <option key={c} value={c}>{c.replace("USDT", "")}</option>
+                      ))}
                   </select>
                 </div>
 
@@ -591,8 +591,8 @@ export default function Home() {
                           isSelected
                             ? "bg-emerald-500/20 text-emerald-300 border-emerald-500/40 shadow-sm"
                             : symbol === s
-                            ? "bg-indigo-500/20 text-indigo-400 border-indigo-500/30"
-                            : "bg-neutral-800/50 hover:bg-neutral-800 text-neutral-400 hover:text-white border-neutral-700/50 hover:border-neutral-600"
+                              ? "bg-indigo-500/20 text-indigo-400 border-indigo-500/30"
+                              : "bg-neutral-800/50 hover:bg-neutral-800 text-neutral-400 hover:text-white border-neutral-700/50 hover:border-neutral-600"
                         )}
                         title={isSelected ? `${s.replace('USDT', '')} selecionado no Robô (clique para remover)` : `Clique para adicionar ${s.replace('USDT', '')} ao Robô`}
                       >
@@ -611,8 +611,8 @@ export default function Home() {
                       robotScanResult.type === "success"
                         ? "bg-emerald-950/40 border-emerald-500/40 text-emerald-300"
                         : robotScanResult.type === "info"
-                        ? "bg-neutral-950 border-neutral-800 text-neutral-300"
-                        : "bg-rose-950/40 border-rose-500/40 text-rose-300"
+                          ? "bg-neutral-950 border-neutral-800 text-neutral-300"
+                          : "bg-rose-950/40 border-rose-500/40 text-rose-300"
                     )}
                   >
                     <div className="flex items-center gap-2">
@@ -637,15 +637,15 @@ export default function Home() {
               </div>
             </div >
 
-  { isAnalyzing && (
-    <p className="text-sm text-indigo-400 mt-4 animate-pulse border-t border-neutral-800 pt-4">
-      Baixando histórico, calculando indicadores e chamando Inteligência Artificial...
-    </p>
-  )}
+            {isAnalyzing && (
+              <p className="text-sm text-indigo-400 mt-4 animate-pulse border-t border-neutral-800 pt-4">
+                Baixando histórico, calculando indicadores e chamando Inteligência Artificial...
+              </p>
+            )}
           </div >
 
-  {/* Right: Estatísticas da IA */ }
-  < div className = "xl:col-span-5 grid grid-cols-2 gap-4" >
+          {/* Right: Estatísticas da IA */}
+          < div className="xl:col-span-5 grid grid-cols-2 gap-4" >
             <div className="bg-neutral-900 border border-neutral-800 rounded-xl p-5 shadow-lg flex flex-col justify-center items-center text-center">
               <span className="text-neutral-400 text-sm font-semibold mb-1">Taxa de Acerto (Win Rate)</span>
               <span className="text-4xl font-black text-emerald-400">{stats.winRate}%</span>
@@ -663,7 +663,7 @@ export default function Home() {
             </div>
             <div className="bg-neutral-900 border border-indigo-900/50 rounded-xl p-5 shadow-lg flex flex-col justify-center items-center text-center">
               <span className="text-indigo-400 text-sm font-semibold mb-2">Rastreador Automático</span>
-              <button 
+              <button
                 onClick={handleEvaluate}
                 disabled={isEvaluating}
                 className="text-xs font-bold bg-indigo-600 hover:bg-indigo-500 text-white px-4 py-3 rounded-lg transition-colors flex items-center gap-2 shadow-lg hover:shadow-indigo-500/20 disabled:opacity-50 disabled:cursor-not-allowed"
@@ -675,8 +675,8 @@ export default function Home() {
           </div >
         </div >
 
-  {/* Lembrete de Horários e Radar Macro */ }
-  < details className = "mt-8 mb-2 group bg-neutral-800/20 border border-neutral-700/50 rounded-lg" >
+        {/* Lembrete de Horários e Radar Macro */}
+        < details className="mt-8 mb-2 group bg-neutral-800/20 border border-neutral-700/50 rounded-lg" >
           <summary className="text-sm font-semibold text-neutral-300 p-3 flex items-center gap-2 cursor-pointer select-none list-none hover:bg-neutral-800/40 transition-colors rounded-lg">
             <Brain className="w-4 h-4 text-indigo-400" /> Dicas de Horários e Radar Macro
             <ChevronDown className="w-4 h-4 ml-auto text-neutral-500 group-open:rotate-180 transition-transform" />
@@ -727,373 +727,373 @@ export default function Home() {
           </div>
         </details >
 
-  {/* Radar de Gemas & Explosões (CoinGecko) */ }
-  < section className = "bg-neutral-900 border border-neutral-800 rounded-xl p-5 shadow-xl" >
-    <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-4 pb-3 border-b border-neutral-800">
-      <div className="flex items-center gap-3">
-        <div className="p-2 rounded-lg bg-amber-500/10 text-amber-400 border border-amber-500/20">
-          <Rocket className="w-5 h-5" />
-        </div>
-        <div>
-          <h2 className="text-lg font-bold text-white flex items-center gap-2">
-            Radar CoinGecko • Oportunidades & Gemas
-            <span className="text-xs bg-amber-500/20 text-amber-300 px-2 py-0.5 rounded font-mono font-medium">Trending Global</span>
-          </h2>
-          <p className="text-xs text-neutral-400">
-            Moedas mais buscadas no mundo agora com potencial de explosão nos próximos dias/semanas.
-          </p>
-        </div>
-      </div>
-
-      <div className="flex items-center gap-3 self-end sm:self-center">
-        {lastGemsUpdate && (
-          <span className="text-xs text-neutral-500 font-mono">
-            Atualizado às {lastGemsUpdate}
-          </span>
-        )}
-        <button
-          onClick={fetchRadarGems}
-          disabled={loadingGems}
-          className="flex items-center gap-1.5 px-3 py-1.5 bg-neutral-800 hover:bg-neutral-700 text-neutral-300 hover:text-white rounded-lg text-xs font-semibold transition-colors disabled:opacity-50"
-        >
-          <Sparkles className={clsx("w-3.5 h-3.5 text-amber-400", loadingGems && "animate-spin")} />
-          {loadingGems ? "Atualizando..." : "Escanear Radar"}
-        </button>
-      </div>
-    </div>
-
-{
-  loadingGems && trendingGems.length === 0 ? (
-    <div className="flex items-center justify-center py-10 text-neutral-500 gap-2 text-sm">
-      <Loader2 className="w-5 h-5 animate-spin text-amber-400" />
-      Rastreando tendências mundiais no CoinGecko...
-    </div>
-  ) : trendingGems.length === 0 ? (
-    <div className="text-center py-8 text-neutral-500 text-xs">
-      Nenhuma gema detectada no momento. Clique em "Escanear Radar" para atualizar.
-    </div>
-  ) : (
-  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-3">
-    {trendingGems.slice(0, 10).map((gem) => {
-      const isSelected = symbol === gem.binancePair;
-      const isInCron = cronCoins.includes(gem.binancePair);
-
-      return (
-        <div
-          key={gem.id}
-          className={clsx(
-            "bg-neutral-950/60 border rounded-xl p-3.5 flex flex-col justify-between transition-all hover:border-neutral-700 relative group",
-            gem.availableOnBinance
-              ? "border-neutral-800/80 hover:shadow-lg hover:shadow-amber-500/5"
-              : "border-neutral-800/40 opacity-80"
-          )}
-        >
-          <div>
-            {/* Top Row: Coin info & Rank */}
-            <div className="flex items-center justify-between gap-2 mb-2">
-              <div className="flex items-center gap-2 min-w-0">
-                {gem.thumb ? (
-                  <img src={gem.thumb} alt={gem.name} className="w-6 h-6 rounded-full flex-shrink-0" />
-                ) : (
-                  <div className="w-6 h-6 rounded-full bg-neutral-800 flex-shrink-0" />
-                )}
-                <div className="min-w-0">
-                  <h4 className="text-xs font-bold text-white truncate">{gem.name}</h4>
-                  <span className="text-[10px] text-neutral-400 font-mono block uppercase">{gem.symbol}</span>
-                </div>
+        {/* Radar de Gemas & Explosões (CoinGecko) */}
+        < section className="bg-neutral-900 border border-neutral-800 rounded-xl p-5 shadow-xl" >
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-4 pb-3 border-b border-neutral-800">
+            <div className="flex items-center gap-3">
+              <div className="p-2 rounded-lg bg-amber-500/10 text-amber-400 border border-amber-500/20">
+                <Rocket className="w-5 h-5" />
               </div>
-
-              {gem.marketCapRank && (
-                <span className="text-[10px] font-mono text-neutral-500 bg-neutral-900 border border-neutral-800 px-1.5 py-0.5 rounded flex-shrink-0">
-                  #{gem.marketCapRank}
-                </span>
-              )}
+              <div>
+                <h2 className="text-lg font-bold text-white flex items-center gap-2">
+                  Radar CoinGecko • Oportunidades & Gemas
+                  <span className="text-xs bg-amber-500/20 text-amber-300 px-2 py-0.5 rounded font-mono font-medium">Trending Global</span>
+                </h2>
+                <p className="text-xs text-neutral-400">
+                  Moedas mais buscadas no mundo agora com potencial de explosão nos próximos dias/semanas.
+                </p>
+              </div>
             </div>
 
-            {/* Middle Row: Price & 24h Change */}
-            <div className="flex items-baseline justify-between mt-2 pt-2 border-t border-neutral-900">
-              <span className="text-xs font-mono font-bold text-neutral-200">
-                ${typeof gem.priceUsd === "number" && gem.priceUsd < 0.01
-                  ? gem.priceUsd.toFixed(6)
-                  : typeof gem.priceUsd === "number"
-                    ? gem.priceUsd.toFixed(3)
-                    : gem.priceUsd}
-              </span>
-              <span
-                className={clsx(
-                  "text-[11px] font-bold px-1.5 py-0.5 rounded",
-                  gem.change24h >= 0
-                    ? "bg-emerald-500/10 text-emerald-400"
-                    : "bg-rose-500/10 text-rose-400"
-                )}
+            <div className="flex items-center gap-3 self-end sm:self-center">
+              {lastGemsUpdate && (
+                <span className="text-xs text-neutral-500 font-mono">
+                  Atualizado às {lastGemsUpdate}
+                </span>
+              )}
+              <button
+                onClick={fetchRadarGems}
+                disabled={loadingGems}
+                className="flex items-center gap-1.5 px-3 py-1.5 bg-neutral-800 hover:bg-neutral-700 text-neutral-300 hover:text-white rounded-lg text-xs font-semibold transition-colors disabled:opacity-50"
               >
-                {gem.change24h >= 0 ? "+" : ""}{gem.change24h}%
-              </span>
-            </div>
-
-            {/* Score de Potencial & Badge Binance */}
-            <div className="mt-2.5 flex items-center justify-between gap-1">
-              <div className="flex items-center gap-1">
-                <span className="text-[10px] text-neutral-500">Potencial:</span>
-                <span className="text-[10px] font-bold text-amber-400">{gem.potentialScore}%</span>
-              </div>
-              {gem.availableOnBinance ? (
-                <span className="text-[9px] font-bold bg-yellow-500/10 text-yellow-400 border border-yellow-500/30 px-1.5 py-0.2 rounded">
-                  BINANCE
-                </span>
-              ) : (
-                <span className="text-[9px] text-neutral-500 bg-neutral-900 px-1.5 py-0.2 rounded">
-                  DEX / OUTRAS
-                </span>
-              )}
+                <Sparkles className={clsx("w-3.5 h-3.5 text-amber-400", loadingGems && "animate-spin")} />
+                {loadingGems ? "Atualizando..." : "Escanear Radar"}
+              </button>
             </div>
           </div>
 
-          {/* Actions Row */}
-          <div className="mt-3 pt-2.5 border-t border-neutral-900 flex items-center gap-2">
-            {gem.availableOnBinance ? (
-              <>
-                <button
-                  onClick={() => setSymbol(gem.binancePair)}
-                  className={clsx(
-                    "flex-1 py-1 text-[11px] font-medium rounded transition-colors text-center border",
-                    isSelected
-                      ? "bg-indigo-600 text-white border-indigo-500"
-                      : "bg-neutral-900 hover:bg-neutral-800 text-neutral-300 border-neutral-800"
-                  )}
-                  title="Carregar gráfico e analisar"
-                >
-                  {isSelected ? "Selecionada" : "Analisar"}
-                </button>
-
-                <button
-                  onClick={() => {
-                    if (isInCron) removeCronCoin(gem.binancePair);
-                    else addCronCoin(gem.binancePair);
-                  }}
-                  className={clsx(
-                    "px-2 py-1 text-[11px] font-bold rounded transition-colors border",
-                    isInCron
-                      ? "bg-emerald-500/20 text-emerald-400 border-emerald-500/40"
-                      : "bg-neutral-900 hover:bg-neutral-800 text-neutral-400 hover:text-white border-neutral-800"
-                  )}
-                  title={isInCron ? "Remover do Robô Telegram" : "Adicionar ao Robô Telegram"}
-                >
-                  {isInCron ? "No Robô ✓" : "+ Robô"}
-                </button>
-              </>
+          {
+            loadingGems && trendingGems.length === 0 ? (
+              <div className="flex items-center justify-center py-10 text-neutral-500 gap-2 text-sm">
+                <Loader2 className="w-5 h-5 animate-spin text-amber-400" />
+                Rastreando tendências mundiais no CoinGecko...
+              </div>
+            ) : trendingGems.length === 0 ? (
+              <div className="text-center py-8 text-neutral-500 text-xs">
+                Nenhuma gema detectada no momento. Clique em "Escanear Radar" para atualizar.
+              </div>
             ) : (
-              <a
-                href={`https://www.coingecko.com/en/coins/${gem.id}`}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="w-full py-1 text-[11px] font-medium rounded bg-neutral-900 hover:bg-neutral-800 text-neutral-400 hover:text-neutral-200 border border-neutral-800 text-center flex items-center justify-center gap-1"
-              >
-                Ver no CoinGecko <ExternalLink className="w-3 h-3" />
-              </a>
-            )}
-          </div>
-        </div>
-      );
-    })}
-  </div>
-)
-}
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-3">
+                {trendingGems.slice(0, 10).map((gem) => {
+                  const isSelected = symbol === gem.binancePair;
+                  const isInCron = cronCoins.includes(gem.binancePair);
+
+                  return (
+                    <div
+                      key={gem.id}
+                      className={clsx(
+                        "bg-neutral-950/60 border rounded-xl p-3.5 flex flex-col justify-between transition-all hover:border-neutral-700 relative group",
+                        gem.availableOnBinance
+                          ? "border-neutral-800/80 hover:shadow-lg hover:shadow-amber-500/5"
+                          : "border-neutral-800/40 opacity-80"
+                      )}
+                    >
+                      <div>
+                        {/* Top Row: Coin info & Rank */}
+                        <div className="flex items-center justify-between gap-2 mb-2">
+                          <div className="flex items-center gap-2 min-w-0">
+                            {gem.thumb ? (
+                              <img src={gem.thumb} alt={gem.name} className="w-6 h-6 rounded-full flex-shrink-0" />
+                            ) : (
+                              <div className="w-6 h-6 rounded-full bg-neutral-800 flex-shrink-0" />
+                            )}
+                            <div className="min-w-0">
+                              <h4 className="text-xs font-bold text-white truncate">{gem.name}</h4>
+                              <span className="text-[10px] text-neutral-400 font-mono block uppercase">{gem.symbol}</span>
+                            </div>
+                          </div>
+
+                          {gem.marketCapRank && (
+                            <span className="text-[10px] font-mono text-neutral-500 bg-neutral-900 border border-neutral-800 px-1.5 py-0.5 rounded flex-shrink-0">
+                              #{gem.marketCapRank}
+                            </span>
+                          )}
+                        </div>
+
+                        {/* Middle Row: Price & 24h Change */}
+                        <div className="flex items-baseline justify-between mt-2 pt-2 border-t border-neutral-900">
+                          <span className="text-xs font-mono font-bold text-neutral-200">
+                            ${typeof gem.priceUsd === "number" && gem.priceUsd < 0.01
+                              ? gem.priceUsd.toFixed(6)
+                              : typeof gem.priceUsd === "number"
+                                ? gem.priceUsd.toFixed(3)
+                                : gem.priceUsd}
+                          </span>
+                          <span
+                            className={clsx(
+                              "text-[11px] font-bold px-1.5 py-0.5 rounded",
+                              gem.change24h >= 0
+                                ? "bg-emerald-500/10 text-emerald-400"
+                                : "bg-rose-500/10 text-rose-400"
+                            )}
+                          >
+                            {gem.change24h >= 0 ? "+" : ""}{gem.change24h}%
+                          </span>
+                        </div>
+
+                        {/* Score de Potencial & Badge Binance */}
+                        <div className="mt-2.5 flex items-center justify-between gap-1">
+                          <div className="flex items-center gap-1">
+                            <span className="text-[10px] text-neutral-500">Potencial:</span>
+                            <span className="text-[10px] font-bold text-amber-400">{gem.potentialScore}%</span>
+                          </div>
+                          {gem.availableOnBinance ? (
+                            <span className="text-[9px] font-bold bg-yellow-500/10 text-yellow-400 border border-yellow-500/30 px-1.5 py-0.2 rounded">
+                              BINANCE
+                            </span>
+                          ) : (
+                            <span className="text-[9px] text-neutral-500 bg-neutral-900 px-1.5 py-0.2 rounded">
+                              DEX / OUTRAS
+                            </span>
+                          )}
+                        </div>
+                      </div>
+
+                      {/* Actions Row */}
+                      <div className="mt-3 pt-2.5 border-t border-neutral-900 flex items-center gap-2">
+                        {gem.availableOnBinance ? (
+                          <>
+                            <button
+                              onClick={() => setSymbol(gem.binancePair)}
+                              className={clsx(
+                                "flex-1 py-1 text-[11px] font-medium rounded transition-colors text-center border",
+                                isSelected
+                                  ? "bg-indigo-600 text-white border-indigo-500"
+                                  : "bg-neutral-900 hover:bg-neutral-800 text-neutral-300 border-neutral-800"
+                              )}
+                              title="Carregar gráfico e analisar"
+                            >
+                              {isSelected ? "Selecionada" : "Analisar"}
+                            </button>
+
+                            <button
+                              onClick={() => {
+                                if (isInCron) removeCronCoin(gem.binancePair);
+                                else addCronCoin(gem.binancePair);
+                              }}
+                              className={clsx(
+                                "px-2 py-1 text-[11px] font-bold rounded transition-colors border",
+                                isInCron
+                                  ? "bg-emerald-500/20 text-emerald-400 border-emerald-500/40"
+                                  : "bg-neutral-900 hover:bg-neutral-800 text-neutral-400 hover:text-white border-neutral-800"
+                              )}
+                              title={isInCron ? "Remover do Robô Telegram" : "Adicionar ao Robô Telegram"}
+                            >
+                              {isInCron ? "No Robô ✓" : "+ Robô"}
+                            </button>
+                          </>
+                        ) : (
+                          <a
+                            href={`https://www.coingecko.com/en/coins/${gem.id}`}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="w-full py-1 text-[11px] font-medium rounded bg-neutral-900 hover:bg-neutral-800 text-neutral-400 hover:text-neutral-200 border border-neutral-800 text-center flex items-center justify-center gap-1"
+                          >
+                            Ver no CoinGecko <ExternalLink className="w-3 h-3" />
+                          </a>
+                        )}
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            )
+          }
         </section >
 
-  {/* Real-Time Chart */ }
-  < div className = "mt-8" >
+        {/* Real-Time Chart */}
+        < div className="mt-8" >
           <h2 className="text-xl font-semibold mb-4 flex items-center gap-2">
             <TrendingUp className="w-5 h-5 text-indigo-400" /> Gráfico em Tempo Real
           </h2>
           <TradingViewWidget symbol={symbol} interval={interval} />
         </div >
 
-  {/* Signals Feed */ }
-  < div className = "space-y-4" >
-    <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-2">
-      <h2 className="text-xl font-semibold flex items-center gap-2">
-        <Clock className="w-5 h-5 text-neutral-400" /> Sinais Recentes
-      </h2>
-      <div className="flex flex-wrap gap-2">
-        {['ALL', 'BUY', 'SELL', 'HIGH_CONFIDENCE', 'OPEN', 'WIN'].map((mode) => (
-          <button
-            key={mode}
-            onClick={() => setFilterMode(mode)}
-            className={clsx(
-              "px-3 py-1.5 text-xs font-bold rounded-lg transition-all border",
-              filterMode === mode
-                ? "bg-indigo-600 text-white border-indigo-500 shadow-lg shadow-indigo-500/20"
-                : "bg-neutral-900 border-neutral-800 text-neutral-400 hover:text-white hover:bg-neutral-800"
-            )}
-          >
-            {mode === 'ALL' && "Todos"}
-            {mode === 'BUY' && "🟢 Compra"}
-            {mode === 'SELL' && "🔴 Venda"}
-            {mode === 'HIGH_CONFIDENCE' && "🔥 Alta Confiança (+80%)"}
-            {mode === 'OPEN' && "⏳ Abertos"}
-            {mode === 'WIN' && "🏆 Apenas Wins"}
-          </button>
-        ))}
-      </div>
-    </div>
-
-{
-  loadingSignals ? (
-    <div className="flex items-center justify-center p-12 text-neutral-500">
-      <Loader2 className="w-8 h-8 animate-spin" />
-    </div>
-  ) : signals.length === 0 ? (
-    <div className="bg-neutral-900 border border-neutral-800 rounded-xl p-8 text-center text-neutral-400">
-      Nenhum sinal gerado ainda. Clique em "Analisar Agora".
-    </div>
-  ) : (
-    <div className="flex flex-col gap-4">
-      {groupedSignals.map((group) => (
-        <details key={group.symbol} className="group/coin bg-neutral-900/40 border border-neutral-800/60 rounded-xl overflow-hidden">
-          <summary className="flex items-center gap-3 p-4 cursor-pointer select-none list-none hover:bg-neutral-800/40 transition-colors">
-            <h3 className="text-xl font-black text-white tracking-tight">{group.symbol}</h3>
-            <span className="bg-neutral-800 text-neutral-400 text-xs px-3 py-1 rounded-full font-medium border border-neutral-700/50">
-              {group.signals.length} {group.signals.length === 1 ? 'Análise' : 'Análises'}
-            </span>
-            {(() => {
-              const wins = group.signals.filter(s => s.status && s.status.startsWith('WIN')).length;
-              const losses = group.signals.filter(s => s.status && s.status !== 'OPEN' && !s.status.startsWith('WIN')).length;
-              return (
-                <div className="flex gap-2">
-                  {wins > 0 && (
-                    <span className="bg-emerald-500/10 text-emerald-400 text-xs px-2 py-1 rounded-full font-medium border border-emerald-500/20">
-                      {wins} {wins === 1 ? 'WIN' : 'WINS'}
-                    </span>
+        {/* Signals Feed */}
+        < div className="space-y-4" >
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-2">
+            <h2 className="text-xl font-semibold flex items-center gap-2">
+              <Clock className="w-5 h-5 text-neutral-400" /> Sinais Recentes
+            </h2>
+            <div className="flex flex-wrap gap-2">
+              {['ALL', 'BUY', 'SELL', 'HIGH_CONFIDENCE', 'OPEN', 'WIN'].map((mode) => (
+                <button
+                  key={mode}
+                  onClick={() => setFilterMode(mode)}
+                  className={clsx(
+                    "px-3 py-1.5 text-xs font-bold rounded-lg transition-all border",
+                    filterMode === mode
+                      ? "bg-indigo-600 text-white border-indigo-500 shadow-lg shadow-indigo-500/20"
+                      : "bg-neutral-900 border-neutral-800 text-neutral-400 hover:text-white hover:bg-neutral-800"
                   )}
-                  {losses > 0 && (
-                    <span className="bg-rose-500/10 text-rose-400 text-xs px-2 py-1 rounded-full font-medium border border-rose-500/20">
-                      {losses} {losses === 1 ? 'LOSS' : 'LOSSES'}
-                    </span>
-                  )}
-                </div>
-              );
-            })()}
-            <ChevronDown className="w-5 h-5 ml-auto text-neutral-500 group-open/coin:rotate-180 transition-transform" />
-          </summary>
-
-          <div className="p-4 pt-2 border-t border-neutral-800/50 grid grid-cols-1 gap-6 bg-neutral-950/20">
-            {group.signals.map((signal) => (
-              <div key={signal.id} className="bg-neutral-900 border border-neutral-800 rounded-xl p-6 shadow-lg hover:border-neutral-700 transition-colors">
-                <div className="flex justify-between items-start mb-4">
-                  <div className="flex items-center gap-2">
-                    <span className="text-sm text-neutral-500 flex items-center gap-2">
-                      <Clock className="w-4 h-4" /> {new Date(signal.createdAt).toLocaleString()} • {signal.interval}
-                    </span>
-                    {signal.signalId && (
-                      <span className="bg-indigo-500/10 text-indigo-400 font-mono text-xs px-2.5 py-0.5 rounded font-bold border border-indigo-500/30">
-                        #{signal.signalId}
-                      </span>
-                    )}
-                  </div>
-                  <div className="flex items-center gap-3">
-                    <div className={clsx(
-                      "px-4 py-1.5 rounded-full font-bold flex items-center gap-2",
-                      signal.action === 'BUY' ? 'bg-emerald-500/10 text-emerald-500 border border-emerald-500/20' :
-                        signal.action === 'SELL' ? 'bg-rose-500/10 text-rose-500 border border-rose-500/20' :
-                          'bg-amber-500/10 text-amber-500 border border-amber-500/20'
-                    )}>
-                      {signal.action === 'BUY' ? <TrendingUp className="w-5 h-5" /> :
-                        signal.action === 'SELL' ? <TrendingDown className="w-5 h-5" /> :
-                          <Activity className="w-5 h-5" />}
-                      {signal.action}
-                    </div>
-                    <button
-                      onClick={() => handleDelete(signal.id)}
-                      className="p-2 text-neutral-500 hover:text-rose-500 hover:bg-rose-500/10 rounded-lg transition-colors"
-                      title="Excluir Sinal"
-                    >
-                      <Trash2 className="w-5 h-5" />
-                    </button>
-                  </div>
-                </div>
-
-                {/* Status Badge */}
-                {signal.status && signal.status !== 'OPEN' && (
-                  <div className={clsx(
-                    "mb-4 px-4 py-2 rounded-lg text-sm font-bold inline-block border",
-                    signal.status.startsWith('WIN') ? "bg-emerald-500/10 text-emerald-400 border-emerald-500/20" : "bg-rose-500/10 text-rose-400 border-rose-500/20"
-                  )}>
-                    {signal.status.startsWith('WIN') ? `✅ ALVO ATINGIDO (${signal.status})` : `❌ STOP LOSS ATINGIDO`}
-                  </div>
-                )}
-
-                <div className="bg-neutral-950 p-6 rounded-xl mb-6 text-neutral-300 border border-neutral-800/50 shadow-inner">
-                  <article className="prose prose-invert prose-sm md:prose-base max-w-none prose-headings:text-indigo-400 prose-a:text-indigo-400 prose-strong:text-white prose-ul:my-2 prose-li:my-0 prose-p:my-2">
-                    <ReactMarkdown>{signal.message}</ReactMarkdown>
-                  </article>
-                </div>
-
-                <div className="grid grid-cols-2 md:grid-cols-4 gap-2 text-sm">
-                  <div className="bg-neutral-950 p-3 rounded-lg border border-neutral-800/50">
-                    <span className="text-neutral-500 block text-xs uppercase tracking-wider mb-1">Preço Entrada</span>
-                    <span className="font-mono text-white">${signal.precoEntrada?.toLocaleString() || signal.price?.toLocaleString()}</span>
-                  </div>
-                  <div className="bg-neutral-950 p-3 rounded-lg border border-neutral-800/50">
-                    <span className="text-neutral-500 block text-xs uppercase tracking-wider mb-1">Preço Atual</span>
-                    <span className="font-mono text-neutral-400">${signal.price?.toLocaleString()}</span>
-                  </div>
-                  <div className="bg-neutral-950 p-3 rounded-lg border border-neutral-800/50">
-                    <span className="text-neutral-500 block text-xs uppercase tracking-wider mb-1">Confiança da IA</span>
-                    <span className="font-bold text-indigo-400">{signal.score || 0}%</span>
-                  </div>
-                  <div className="bg-neutral-950 p-3 rounded-lg border border-neutral-800/50">
-                    <span className="text-neutral-500 block text-xs uppercase tracking-wider mb-1">RSI</span>
-                    <span className="font-mono text-white">{signal.indicators?.rsi?.toFixed(1) || '-'}</span>
-                  </div>
-
-                  <div className="bg-neutral-950 p-3 rounded-lg border border-neutral-800/50">
-                    <span className="text-neutral-500 block text-xs uppercase tracking-wider mb-1">Take Profit 1</span>
-                    <span className="font-mono text-emerald-400">${signal.takeProfit1?.toLocaleString() || signal.takeProfit?.toLocaleString() || '-'}</span>
-                  </div>
-                  <div className="bg-neutral-950 p-3 rounded-lg border border-neutral-800/50">
-                    <span className="text-neutral-500 block text-xs uppercase tracking-wider mb-1">Take Profit 2</span>
-                    <span className="font-mono text-emerald-500">${signal.takeProfit2?.toLocaleString() || '-'}</span>
-                  </div>
-                  <div className="bg-neutral-950 p-3 rounded-lg border border-neutral-800/50">
-                    <span className="text-neutral-500 block text-xs uppercase tracking-wider mb-1">Take Profit 3</span>
-                    <span className="font-mono text-emerald-600">${signal.takeProfit3?.toLocaleString() || '-'}</span>
-                  </div>
-                  <div className="bg-neutral-950 p-3 rounded-lg border border-neutral-800/50">
-                    <span className="text-neutral-500 block text-xs uppercase tracking-wider mb-1">Stop Loss</span>
-                    <span className="font-mono text-rose-400">${signal.stopLoss?.toLocaleString() || '-'}</span>
-                  </div>
-
-                  <div className="bg-neutral-950 p-3 rounded-lg border border-neutral-800/50">
-                    <span className="text-neutral-500 block text-xs uppercase tracking-wider mb-1">R/R</span>
-                    <span className="font-mono text-amber-400">{signal.rr || '-'}</span>
-                  </div>
-                  <div className="bg-neutral-950 p-3 rounded-lg border border-neutral-800/50">
-                    <span className="text-neutral-500 block text-xs uppercase tracking-wider mb-1">Ordem</span>
-                    <span className="text-white">{signal.tipoOrdem || '-'}</span>
-                  </div>
-                  <div className="bg-neutral-950 p-3 rounded-lg border border-neutral-800/50">
-                    <span className="text-neutral-500 block text-xs uppercase tracking-wider mb-1">Tendência</span>
-                    <span className="text-white">{signal.tendencia || '-'}</span>
-                  </div>
-                  <div className="bg-neutral-950 p-3 rounded-lg border border-neutral-800/50">
-                    <span className="text-neutral-500 block text-xs uppercase tracking-wider mb-1">ID da Ordem</span>
-                    <span className="font-mono text-indigo-400 font-bold">#{signal.signalId || signal.id.slice(0, 4)}</span>
-                  </div>
-                  <div className="bg-neutral-950 p-3 rounded-lg border border-neutral-800/50">
-                    <span className="text-neutral-500 block text-xs uppercase tracking-wider mb-1">Prognóstico</span>
-                    <span className="text-white line-clamp-1" title={signal.prognostico}>{signal.prognostico || '-'}</span>
-                  </div>
-                </div>
-                <RiskCalculator signal={signal} />
-              </div>
-            ))}
+                >
+                  {mode === 'ALL' && "Todos"}
+                  {mode === 'BUY' && "🟢 Compra"}
+                  {mode === 'SELL' && "🔴 Venda"}
+                  {mode === 'HIGH_CONFIDENCE' && "🔥 Alta Confiança (+80%)"}
+                  {mode === 'OPEN' && "⏳ Abertos"}
+                  {mode === 'WIN' && "🏆 Apenas Wins"}
+                </button>
+              ))}
+            </div>
           </div>
-        </details>
-      ))}
-    </div>
-  )
-}
+
+          {
+            loadingSignals ? (
+              <div className="flex items-center justify-center p-12 text-neutral-500">
+                <Loader2 className="w-8 h-8 animate-spin" />
+              </div>
+            ) : signals.length === 0 ? (
+              <div className="bg-neutral-900 border border-neutral-800 rounded-xl p-8 text-center text-neutral-400">
+                Nenhum sinal gerado ainda. Clique em "Analisar Agora".
+              </div>
+            ) : (
+              <div className="flex flex-col gap-4">
+                {groupedSignals.map((group) => (
+                  <details key={group.symbol} className="group/coin bg-neutral-900/40 border border-neutral-800/60 rounded-xl overflow-hidden">
+                    <summary className="flex items-center gap-3 p-4 cursor-pointer select-none list-none hover:bg-neutral-800/40 transition-colors">
+                      <h3 className="text-xl font-black text-white tracking-tight">{group.symbol}</h3>
+                      <span className="bg-neutral-800 text-neutral-400 text-xs px-3 py-1 rounded-full font-medium border border-neutral-700/50">
+                        {group.signals.length} {group.signals.length === 1 ? 'Análise' : 'Análises'}
+                      </span>
+                      {(() => {
+                        const wins = group.signals.filter(s => s.status && s.status.startsWith('WIN')).length;
+                        const losses = group.signals.filter(s => s.status && s.status !== 'OPEN' && !s.status.startsWith('WIN')).length;
+                        return (
+                          <div className="flex gap-2">
+                            {wins > 0 && (
+                              <span className="bg-emerald-500/10 text-emerald-400 text-xs px-2 py-1 rounded-full font-medium border border-emerald-500/20">
+                                {wins} {wins === 1 ? 'WIN' : 'WINS'}
+                              </span>
+                            )}
+                            {losses > 0 && (
+                              <span className="bg-rose-500/10 text-rose-400 text-xs px-2 py-1 rounded-full font-medium border border-rose-500/20">
+                                {losses} {losses === 1 ? 'LOSS' : 'LOSSES'}
+                              </span>
+                            )}
+                          </div>
+                        );
+                      })()}
+                      <ChevronDown className="w-5 h-5 ml-auto text-neutral-500 group-open/coin:rotate-180 transition-transform" />
+                    </summary>
+
+                    <div className="p-4 pt-2 border-t border-neutral-800/50 grid grid-cols-1 gap-6 bg-neutral-950/20">
+                      {group.signals.map((signal) => (
+                        <div key={signal.id} className="bg-neutral-900 border border-neutral-800 rounded-xl p-6 shadow-lg hover:border-neutral-700 transition-colors">
+                          <div className="flex justify-between items-start mb-4">
+                            <div className="flex items-center gap-2">
+                              <span className="text-sm text-neutral-500 flex items-center gap-2">
+                                <Clock className="w-4 h-4" /> {new Date(signal.createdAt).toLocaleString()} • {signal.interval}
+                              </span>
+                              {signal.signalId && (
+                                <span className="bg-indigo-500/10 text-indigo-400 font-mono text-xs px-2.5 py-0.5 rounded font-bold border border-indigo-500/30">
+                                  #{signal.signalId}
+                                </span>
+                              )}
+                            </div>
+                            <div className="flex items-center gap-3">
+                              <div className={clsx(
+                                "px-4 py-1.5 rounded-full font-bold flex items-center gap-2",
+                                signal.action === 'BUY' ? 'bg-emerald-500/10 text-emerald-500 border border-emerald-500/20' :
+                                  signal.action === 'SELL' ? 'bg-rose-500/10 text-rose-500 border border-rose-500/20' :
+                                    'bg-amber-500/10 text-amber-500 border border-amber-500/20'
+                              )}>
+                                {signal.action === 'BUY' ? <TrendingUp className="w-5 h-5" /> :
+                                  signal.action === 'SELL' ? <TrendingDown className="w-5 h-5" /> :
+                                    <Activity className="w-5 h-5" />}
+                                {signal.action}
+                              </div>
+                              <button
+                                onClick={() => handleDelete(signal.id)}
+                                className="p-2 text-neutral-500 hover:text-rose-500 hover:bg-rose-500/10 rounded-lg transition-colors"
+                                title="Excluir Sinal"
+                              >
+                                <Trash2 className="w-5 h-5" />
+                              </button>
+                            </div>
+                          </div>
+
+                          {/* Status Badge */}
+                          {signal.status && signal.status !== 'OPEN' && (
+                            <div className={clsx(
+                              "mb-4 px-4 py-2 rounded-lg text-sm font-bold inline-block border",
+                              signal.status.startsWith('WIN') ? "bg-emerald-500/10 text-emerald-400 border-emerald-500/20" : "bg-rose-500/10 text-rose-400 border-rose-500/20"
+                            )}>
+                              {signal.status.startsWith('WIN') ? `✅ ALVO ATINGIDO (${signal.status})` : `❌ STOP LOSS ATINGIDO`}
+                            </div>
+                          )}
+
+                          <div className="bg-neutral-950 p-6 rounded-xl mb-6 text-neutral-300 border border-neutral-800/50 shadow-inner">
+                            <article className="prose prose-invert prose-sm md:prose-base max-w-none prose-headings:text-indigo-400 prose-a:text-indigo-400 prose-strong:text-white prose-ul:my-2 prose-li:my-0 prose-p:my-2">
+                              <ReactMarkdown>{signal.message}</ReactMarkdown>
+                            </article>
+                          </div>
+
+                          <div className="grid grid-cols-2 md:grid-cols-4 gap-2 text-sm">
+                            <div className="bg-neutral-950 p-3 rounded-lg border border-neutral-800/50">
+                              <span className="text-neutral-500 block text-xs uppercase tracking-wider mb-1">Preço Entrada</span>
+                              <span className="font-mono text-white">${signal.precoEntrada?.toLocaleString() || signal.price?.toLocaleString()}</span>
+                            </div>
+                            <div className="bg-neutral-950 p-3 rounded-lg border border-neutral-800/50">
+                              <span className="text-neutral-500 block text-xs uppercase tracking-wider mb-1">Preço Atual</span>
+                              <span className="font-mono text-neutral-400">${signal.price?.toLocaleString()}</span>
+                            </div>
+                            <div className="bg-neutral-950 p-3 rounded-lg border border-neutral-800/50">
+                              <span className="text-neutral-500 block text-xs uppercase tracking-wider mb-1">Confiança da IA</span>
+                              <span className="font-bold text-indigo-400">{signal.score || 0}%</span>
+                            </div>
+                            <div className="bg-neutral-950 p-3 rounded-lg border border-neutral-800/50">
+                              <span className="text-neutral-500 block text-xs uppercase tracking-wider mb-1">RSI</span>
+                              <span className="font-mono text-white">{signal.indicators?.rsi?.toFixed(1) || '-'}</span>
+                            </div>
+
+                            <div className="bg-neutral-950 p-3 rounded-lg border border-neutral-800/50">
+                              <span className="text-neutral-500 block text-xs uppercase tracking-wider mb-1">Take Profit 1</span>
+                              <span className="font-mono text-emerald-400">${signal.takeProfit1?.toLocaleString() || signal.takeProfit?.toLocaleString() || '-'}</span>
+                            </div>
+                            <div className="bg-neutral-950 p-3 rounded-lg border border-neutral-800/50">
+                              <span className="text-neutral-500 block text-xs uppercase tracking-wider mb-1">Take Profit 2</span>
+                              <span className="font-mono text-emerald-500">${signal.takeProfit2?.toLocaleString() || '-'}</span>
+                            </div>
+                            <div className="bg-neutral-950 p-3 rounded-lg border border-neutral-800/50">
+                              <span className="text-neutral-500 block text-xs uppercase tracking-wider mb-1">Take Profit 3</span>
+                              <span className="font-mono text-emerald-600">${signal.takeProfit3?.toLocaleString() || '-'}</span>
+                            </div>
+                            <div className="bg-neutral-950 p-3 rounded-lg border border-neutral-800/50">
+                              <span className="text-neutral-500 block text-xs uppercase tracking-wider mb-1">Stop Loss</span>
+                              <span className="font-mono text-rose-400">${signal.stopLoss?.toLocaleString() || '-'}</span>
+                            </div>
+
+                            <div className="bg-neutral-950 p-3 rounded-lg border border-neutral-800/50">
+                              <span className="text-neutral-500 block text-xs uppercase tracking-wider mb-1">R/R</span>
+                              <span className="font-mono text-amber-400">{signal.rr || '-'}</span>
+                            </div>
+                            <div className="bg-neutral-950 p-3 rounded-lg border border-neutral-800/50">
+                              <span className="text-neutral-500 block text-xs uppercase tracking-wider mb-1">Ordem</span>
+                              <span className="text-white">{signal.tipoOrdem || '-'}</span>
+                            </div>
+                            <div className="bg-neutral-950 p-3 rounded-lg border border-neutral-800/50">
+                              <span className="text-neutral-500 block text-xs uppercase tracking-wider mb-1">Tendência</span>
+                              <span className="text-white">{signal.tendencia || '-'}</span>
+                            </div>
+                            <div className="bg-neutral-950 p-3 rounded-lg border border-neutral-800/50">
+                              <span className="text-neutral-500 block text-xs uppercase tracking-wider mb-1">ID da Ordem</span>
+                              <span className="font-mono text-indigo-400 font-bold">#{signal.signalId || signal.id.slice(0, 4)}</span>
+                            </div>
+                            <div className="bg-neutral-950 p-3 rounded-lg border border-neutral-800/50">
+                              <span className="text-neutral-500 block text-xs uppercase tracking-wider mb-1">Prognóstico</span>
+                              <span className="text-white line-clamp-1" title={signal.prognostico}>{signal.prognostico || '-'}</span>
+                            </div>
+                          </div>
+                          <RiskCalculator signal={signal} />
+                        </div>
+                      ))}
+                    </div>
+                  </details>
+                ))}
+              </div>
+            )
+          }
         </div >
       </div >
     </main >
