@@ -1,4 +1,4 @@
-import { RSI, MACD, BollingerBands, EMA, VWAP, bullishengulfingpattern, bearishengulfingpattern, doji, hammerpattern, morningdojistar, eveningdojistar, piercingline, darkcloudcover, bullishharami, bearishharami, morningstar, eveningstar, shootingstar, dragonflydoji, gravestonedoji, tweezertop, tweezerbottom, threeblackcrows, threewhitesoldiers, bullishmarubozu, bearishmarubozu } from "technicalindicators";
+import { RSI, MACD, BollingerBands, EMA, VWAP, ATR, bullishengulfingpattern, bearishengulfingpattern, doji, hammerpattern, morningdojistar, eveningdojistar, piercingline, darkcloudcover, bullishharami, bearishharami, morningstar, eveningstar, shootingstar, dragonflydoji, gravestonedoji, tweezertop, tweezerbottom, threeblackcrows, threewhitesoldiers, bullishmarubozu, bearishmarubozu } from "technicalindicators";
 import { Kline } from "./binance";
 
 export interface IndicatorsResult {
@@ -6,6 +6,7 @@ export interface IndicatorsResult {
   rsi: number;
   macd: { MACD?: number; signal?: number; histogram?: number };
   bollingerBands: { lower: number; middle: number; upper: number };
+  bollingerBandwidth: number;
   ema7: number;
   ema25: number;
   ema99: number;
@@ -16,6 +17,11 @@ export interface IndicatorsResult {
   resistance: number;
   volume: number;
   patterns: string[]; // Lista de padrões de candle detectados
+  atr: number; // Volatilidade média real
+  trendBias: "ALTA_MACRO" | "BAIXA_MACRO"; // Posição em relação à EMA 200
+  isConsolidating: boolean; // Mercado lateral sem tendência definida
+  recommendedBuySL: number; // Stop Loss seguro anti-pavios para compra
+  recommendedSellSL: number; // Stop Loss seguro anti-pavios para venda
 }
 
 export function calculateIndicators(klines: Kline[]): IndicatorsResult {
@@ -147,15 +153,26 @@ export function calculateIndicators(klines: Kline[]): IndicatorsResult {
   if (bullishmarubozu(last1)) patterns.push("Bullish Marubozu");
   if (bearishmarubozu(last1)) patterns.push("Bearish Marubozu");
 
-  // Outros clássicos
-  if (piercingline(last5)) patterns.push("Piercing Line");
-  if (darkcloudcover(last5)) patterns.push("Dark Cloud Cover");
+  // 9. ATR (14) - Volatilidade Média Real
+  const atrResult = ATR.calculate({ period: 14, high: highs, low: lows, close: closes });
+  const currentAtr = atrResult[atrResult.length - 1] || (currentPrice * 0.015);
+
+  const bollingerBandwidth = currentBb.middle > 0 ? ((currentBb.upper - currentBb.lower) / currentBb.middle) * 100 : 0;
+  const trendBias: "ALTA_MACRO" | "BAIXA_MACRO" = currentPrice >= currentEma200 ? "ALTA_MACRO" : "BAIXA_MACRO";
+  
+  // Mercado lateral (choppy/sem tendência): RSI em zona neutra (45-55) ou bandas muito estreitas
+  const isConsolidating = (currentRsi >= 45 && currentRsi <= 55) || (bollingerBandwidth < 2.0);
+
+  // Stop Loss técnico anti-violino (mínimo de 1.5x ATR além do suporte/resistência ou do preço)
+  const recommendedBuySL = Math.min(support - (0.5 * currentAtr), currentPrice - (1.5 * currentAtr));
+  const recommendedSellSL = Math.max(resistance + (0.5 * currentAtr), currentPrice + (1.5 * currentAtr));
 
   return {
     currentPrice,
     rsi: currentRsi,
     macd: currentMacd,
     bollingerBands: currentBb as { lower: number; middle: number; upper: number },
+    bollingerBandwidth,
     ema7: currentEma7,
     ema25: currentEma25,
     ema99: currentEma99,
@@ -166,5 +183,10 @@ export function calculateIndicators(klines: Kline[]): IndicatorsResult {
     resistance,
     volume: currentVolume,
     patterns,
+    atr: currentAtr,
+    trendBias,
+    isConsolidating,
+    recommendedBuySL,
+    recommendedSellSL,
   };
 }

@@ -24,23 +24,65 @@ export async function POST(req: Request) {
     // 2. Calcular Indicadores Matemáticos
     const indicators = calculateIndicators(klines);
 
-    // 3. Montar o Relatório Técnico para a IA
+    // 3. Avaliar Sessão e Horário de Mercado (BRT)
+    const now = new Date();
+    const brtString = now.toLocaleString("en-US", { timeZone: "America/Sao_Paulo" });
+    const brtDate = new Date(brtString);
+    const day = brtDate.getDay();
+    const hour = brtDate.getHours();
+
+    let sessionName = "Horário Regular";
+    let isHighRisk = false;
+    let sessionWarning = "Volume e liquidez padrão.";
+
+    if (day === 0 || day === 6) {
+      sessionName = "Final de Semana";
+      isHighRisk = true;
+      sessionWarning = "Baixíssima liquidez institucional. Alto risco de manipulação e violino por baleias. Exija confluência máxima ou HOLD.";
+    } else if (hour >= 9 && hour < 13) {
+      sessionName = "Sobreposição Londres / NY (09h-13h BRT)";
+      sessionWarning = "Alta liquidez institucional real. Ideal para rompimentos e pullbacks confirmados.";
+    } else if (hour >= 14 && hour < 20) {
+      sessionName = "Tarde / Consolidação (14h-20h BRT)";
+      isHighRisk = true;
+      sessionWarning = "Volume em queda pós-Europa. Alto índice de falsos rompimentos (fakeouts).";
+    } else if (hour >= 21 || hour < 1) {
+      sessionName = "Abertura Asiática (21h-01h BRT)";
+      sessionWarning = "Volatilidade noturna asiática moderada a alta.";
+    } else {
+      sessionName = "Madrugada (01h-08h BRT)";
+      isHighRisk = true;
+      sessionWarning = "Baixo volume. Evite scalps arriscados.";
+    }
+
+    // 4. Montar o Relatório Técnico para a IA
     const technicalReport = `
       Moeda: ${symbol}
       Tempo Gráfico: ${interval}
       Preço Atual: $${indicators.currentPrice}
       Volume Atual: ${indicators.volume}
 
+      **Sessão e Horário (Brasília):**
+      - Horário: ${brtDate.toLocaleTimeString("pt-BR", { hour: "2-digit", minute: "2-digit" })} | Sessão: ${sessionName}
+      - Risco da Sessão: ${isHighRisk ? "ELEVADO (Redobrar cautela / priorizar HOLD)" : "NORMAL / ALTA LIQUIDEZ"}
+      - Contexto: ${sessionWarning}
+
       **Indicadores Técnicos:**
-      - RSI (14): ${indicators.rsi.toFixed(2)}
+      - RSI (14): ${indicators.rsi.toFixed(2)} ${indicators.rsi >= 45 && indicators.rsi <= 55 ? "(Zona Neutra / Choppy - Evitar entradas)" : ""}
       - MACD: Linha ${indicators.macd.MACD?.toFixed(2)}, Sinal ${indicators.macd.signal?.toFixed(2)}, Histograma ${indicators.macd.histogram?.toFixed(2)}
-      - Bollinger Bands: Superior $${indicators.bollingerBands.upper.toFixed(2)}, Inferior $${indicators.bollingerBands.lower.toFixed(2)}
+      - Bollinger Bands: Superior $${indicators.bollingerBands.upper.toFixed(2)}, Inferior $${indicators.bollingerBands.lower.toFixed(2)} (Largura: ${indicators.bollingerBandwidth.toFixed(2)}%)
       - EMA (7): $${indicators.ema7.toFixed(4)}
       - EMA (25): $${indicators.ema25.toFixed(4)}
       - EMA (99): $${indicators.ema99.toFixed(4)}
-      - EMA (200): $${indicators.ema200.toFixed(4)}
+      - EMA (200) INSTITUCIONAL: $${indicators.ema200.toFixed(4)} -> Preço está ${indicators.currentPrice >= indicators.ema200 ? "ACIMA da 200 (Tendência Macro BULLISH)" : "ABAIXO da 200 (Tendência Macro BEARISH)"}
+      - ATR (14) - Volatilidade Real: $${indicators.atr.toFixed(4)}
       - VWAP: $${indicators.vwap.toFixed(4)}
       - VPVR (Point of Control): $${indicators.vpvrPOC.toFixed(4)}
+
+      **Parâmetros de Segurança Técnicos:**
+      - Mercado em Consolidação: ${indicators.isConsolidating ? "SIM (ALTO RISCO DE LOSS - Priorizar HOLD)" : "NÃO (Tendência ativa)"}
+      - Stop Loss Técnico Recomendado para COMPRA (com margem de ATR): $${indicators.recommendedBuySL.toFixed(4)}
+      - Stop Loss Técnico Recomendado para VENDA (com margem de ATR): $${indicators.recommendedSellSL.toFixed(4)}
 
       **Ação de Preço (Price Action):**
       - Padrões Detectados: ${indicators.patterns.length > 0 ? indicators.patterns.join(", ") : "Nenhum padrão claro"}
@@ -50,7 +92,7 @@ export async function POST(req: Request) {
 
     console.log("[API] Indicadores calculados. Chamando IA...");
 
-    // 4. Integração com Agentes Autônomos (IA)
+    // 5. Integração com Agentes Autônomos (IA)
     console.log("[API] Lendo prompts dos Agentes Autônomos...");
     const promptsDir = path.join(process.cwd(), "src", "agents", "prompts");
     
@@ -64,8 +106,8 @@ export async function POST(req: Request) {
     }
 
     const masterPrompt = `
-      Você é um Conselho Diretor formado por dois especialistas em criptomoedas.
-      Agente 1: Especialista em curtos timeframes (10 a 30 min), buscando entradas rápidas.
+      Você é um Conselho Diretor de Elite focado em PRESERVAÇÃO DE CAPITAL e ALTA ASSERTIVIDADE.
+      Agente 1: Especialista em curtos timeframes (10 a 30 min, 1h), buscando entradas seguras em pullback.
       Agente 2: Analista Master Institucional, focado em alta confluência e Smart Money Concepts.
 
       INSTRUÇÕES DOS AGENTES:
@@ -78,49 +120,55 @@ export async function POST(req: Request) {
       DADOS TÉCNICOS ATUAIS PARA ANÁLISE:
       ${technicalReport}
 
+      REGRAS CRÍTICAS DE PRESERVAÇÃO DE BANCA:
+      1. Se o mercado estiver consolidando (RSI 45-55 ou Bandas comprimidas), responda HOLD. Ficar de fora é vitória.
+      2. NUNCA dê sinal de BUY se o preço estiver abaixo da EMA 200.
+      3. NUNCA dê sinal de SELL se o preço estiver acima da EMA 200.
+      4. A entrada NUNCA deve ser a mercado no topo de vela esticada. Indique entrada na retração (Pullback na EMA 7 ou 25).
+      5. O Stop Loss DEVE ter margem mínima de segurança de 1.5x ATR além do suporte/resistência para não ser estopado por pavios.
+
       SUA TAREFA:
-      Analise os dados técnicos fornecidos e combine o rigor institucional do Agente 2 com a agilidade do Agente 1.
-      Formule um ÚNICO relatório consolidado que deve, obrigatoriamente, conter as seções abaixo em Markdown.
+      Analise os dados técnicos e formule um ÚNICO relatório consolidado com o formato abaixo:
 
       FORMATO OBRIGATÓRIO DE RESPOSTA:
-      **Visão Geral e Sentimento:** [Descreva a estrutura do mercado, liquidez e sentimento geral]
+      **Visão Geral e Sentimento:** [Descreva a estrutura do mercado, liquidez e se o mercado está em tendência ou picotado/choppy]
       
-      **Confluência de Indicadores:** [Detalhes sobre RSI, MACD, Médias Móveis]
+      **Confluência de Indicadores:** [Detalhes sobre RSI, MACD, Médias Móveis e ATR]
       
       **Ação Recomendada:** [BUY / SELL / HOLD]
-      **Preço de Entrada:** [Preço]
+      **Preço de Entrada:** [Preço com retração]
       **Confiança:** [0 a 100]%
       **Probabilidade de Sucesso:** [0 a 100]%
       **Razão Principal:** [Explicação direta]
       **Gatilhos de Confirmação:** [O que precisa acontecer para confirmar]
-      **Stop Loss Sugerido:** [Preço]
+      **Stop Loss Sugerido:** [Preço seguro com margem de ATR]
       **Take Profit 1:** [Preço]
       **Take Profit 2:** [Preço]
       **Take Profit 3:** [Preço]
-      **R/R:** [Ex: 1:3]
-      **Tipo de Ordem:** [Market / Limit]
+      **R/R:** [Ex: 1:2.5]
+      **Tipo de Ordem:** [Limit / Market]
       **Tendência:** [Alta / Baixa / Lateral]
       **Prognóstico:** [Explicação resumida]
       
       **Dicas de Operação Institucional:**
-      > [Descreva o plano de Trade com base em SMC ou Price action]
+      > [Plano de proteção de capital e gerenciamento de risco]
     `;
 
     console.log("[API] Chamando a Inteligência Artificial com os Agentes...");
     const aiAnalysis = await analyzeScannerData(masterPrompt, 3); // 3 retries
     
-    // Default fallback values
+    // Default fallback values (Sem forçar compras/vendas cegas)
     let action = "HOLD";
     let confianca = 50;
     let precoEntrada = indicators.currentPrice;
-    let stopLoss = indicators.support * 0.995;
-    let takeProfit1 = indicators.resistance * 0.995;
-    let takeProfit2 = takeProfit1;
-    let takeProfit3 = takeProfit1;
-    let rr = "-";
-    let tipoOrdem = "-";
-    let tendencia = "-";
-    let prognostico = "-";
+    let stopLoss = indicators.recommendedBuySL;
+    let takeProfit1 = indicators.currentPrice + (2 * indicators.atr);
+    let takeProfit2 = indicators.currentPrice + (3 * indicators.atr);
+    let takeProfit3 = indicators.currentPrice + (4 * indicators.atr);
+    let rr = "1:2";
+    let tipoOrdem = "Limit";
+    let tendencia = indicators.trendBias === "ALTA_MACRO" ? "Alta" : "Baixa";
+    let prognostico = "Aguardando confluência clara.";
     let message = aiAnalysis || "Erro ao gerar análise (Serviço da IA Indisponível após várias tentativas).";
 
     if (aiAnalysis) {
@@ -129,12 +177,9 @@ export async function POST(req: Request) {
         const match = aiAnalysis.match(regex);
         if (!match) return fallback;
         let strVal = match[1];
-        // Se a string tem ponto e vírgula (ex: 82.750,00), remove o ponto e troca vírgula por ponto.
         if (strVal.includes('.') && strVal.includes(',')) {
            strVal = strVal.replace(/\./g, '').replace(',', '.');
-        } 
-        // Se só tem vírgula (ex: 82750,00)
-        else if (strVal.includes(',') && !strVal.includes('.')) {
+        } else if (strVal.includes(',') && !strVal.includes('.')) {
            strVal = strVal.replace(',', '.');
         }
         return parseFloat(strVal) || fallback;
@@ -148,8 +193,9 @@ export async function POST(req: Request) {
       if (actionMatch) {
         action = actionMatch[1].toUpperCase();
       } else {
-        if (aiAnalysis.includes("BUY")) action = "BUY";
-        if (aiAnalysis.includes("SELL")) action = "SELL";
+        if (aiAnalysis.includes("HOLD")) action = "HOLD";
+        else if (aiAnalysis.includes("BUY")) action = "BUY";
+        else if (aiAnalysis.includes("SELL")) action = "SELL";
       }
 
       confianca = extractFloat(/\*\*Confiança:\*\*\s*(\d+)/i, confianca);
@@ -162,10 +208,62 @@ export async function POST(req: Request) {
       tipoOrdem = extractString(/\*\*Tipo de Ordem:\*\*\s*(.+)/i, tipoOrdem);
       tendencia = extractString(/\*\*Tendência:\*\*\s*(.+)/i, tendencia);
       prognostico = extractString(/\*\*Prognóstico:\*\*\s*(.+)/i, prognostico);
-
     } else {
-       if (indicators.rsi < 40 && indicators.macd.histogram && indicators.macd.histogram > 0) { action = "BUY"; confianca = 75; }
-       if (indicators.rsi > 60 && indicators.macd.histogram && indicators.macd.histogram < 0) { action = "SELL"; confianca = 75; }
+       // Se a IA falhou, NUNCA gere trade cego. Sempre HOLD para proteger capital.
+       action = "HOLD";
+       confianca = 40;
+       prognostico = "IA indisponível. Por segurança do capital, operação abortada.";
+    }
+
+    // ==========================================
+    // CAMADA DE BLINDAGEM DE CAPITAL (SANITY CHECK)
+    // ==========================================
+
+    // 1. Filtro Anti-Choppy / Consolidação
+    if (indicators.isConsolidating && confianca < 85) {
+      action = "HOLD";
+      prognostico = "MERCADO CONSOLIDADO/CHOOPY: Preservação de capital ativa. Aguardar rompimento com volume real.";
+      confianca = Math.min(confianca, 55);
+    }
+
+    // 2. Filtro Institucional EMA 200 (Inquebrável)
+    if (action === "BUY" && indicators.trendBias === "BAIXA_MACRO") {
+      action = "HOLD";
+      prognostico = "PROTEÇÃO: Preço abaixo da EMA 200. Proibido comprar contra a tendência macro de baixa.";
+      confianca = Math.min(confianca, 55);
+    }
+    if (action === "SELL" && indicators.trendBias === "ALTA_MACRO") {
+      action = "HOLD";
+      prognostico = "PROTEÇÃO: Preço acima da EMA 200. Proibido vender contra a tendência macro de alta.";
+      confianca = Math.min(confianca, 55);
+    }
+
+    // 3. Filtro de Fim de Semana / Horário de Risco Elevado
+    if (isHighRisk && confianca < 85) {
+      action = "HOLD";
+      prognostico = `HORÁRIO DE ALTO RISCO (${sessionName}): Baixa liquidez institucional. Sinal desqualificado para proteção de banca.`;
+      confianca = Math.min(confianca, 60);
+    }
+
+    // 4. Sanity Check de Stop Loss Anti-Violino (com ATR)
+    if (action === "BUY") {
+      if (stopLoss >= precoEntrada || (precoEntrada - stopLoss) < (0.8 * indicators.atr)) {
+        stopLoss = indicators.recommendedBuySL;
+      }
+      if (takeProfit1 <= precoEntrada) {
+        takeProfit1 = precoEntrada + (2.0 * indicators.atr);
+        takeProfit2 = precoEntrada + (3.0 * indicators.atr);
+        takeProfit3 = precoEntrada + (4.0 * indicators.atr);
+      }
+    } else if (action === "SELL") {
+      if (stopLoss <= precoEntrada || (stopLoss - precoEntrada) < (0.8 * indicators.atr)) {
+        stopLoss = indicators.recommendedSellSL;
+      }
+      if (takeProfit1 >= precoEntrada) {
+        takeProfit1 = precoEntrada - (2.0 * indicators.atr);
+        takeProfit2 = precoEntrada - (3.0 * indicators.atr);
+        takeProfit3 = precoEntrada - (4.0 * indicators.atr);
+      }
     }
 
     let parsedDecision = {

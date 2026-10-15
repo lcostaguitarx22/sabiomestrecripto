@@ -35,6 +35,11 @@ export async function evaluateSignals() {
       const klines = await fetchBinanceKlinesSince(symbol, interval, startTime);
       if (!klines || klines.length === 0) continue;
 
+      // Validação de sanidade do Stop Loss para não computar erros de regex como Loss
+      const entryPrice = parseFloat(data.precoEntrada) || parseFloat(data.price) || 0;
+      if (action === "BUY" && stopLoss >= entryPrice && entryPrice > 0) continue;
+      if (action === "SELL" && stopLoss <= entryPrice && entryPrice > 0) continue;
+
       let newStatus = "OPEN";
 
       // kline format: [Open time, Open, High, Low, Close, Volume, Close time, ...]
@@ -43,27 +48,29 @@ export async function evaluateSignals() {
         const low = parseFloat(k[3]);
 
         if (action === "BUY") {
-          // Checa Stop Loss primeiro (pior caso dentro do mesmo candle)
+          // Checa se atingiu os Take Profits primeiro (ordem limite no book / realização de lucro)
+          if (takeProfit3 && high >= takeProfit3) { newStatus = "WIN_TP3"; break; }
+          if (takeProfit2 && high >= takeProfit2) { newStatus = "WIN_TP2"; break; }
+          if (takeProfit1 && high >= takeProfit1) { newStatus = "WIN_TP1"; break; }
+          if (data.takeProfit && high >= data.takeProfit) { newStatus = "WIN_TP1"; break; }
+
+          // Se não bateu nenhum alvo de lucro, verifica se foi estopado
           if (low <= stopLoss) {
             newStatus = "LOSS";
             break;
           }
-          // Checa Take Profits (do 3 para o 1)
-          if (takeProfit3 && high >= takeProfit3) { newStatus = "WIN_TP3"; break; }
-          if (takeProfit2 && high >= takeProfit2) { newStatus = "WIN_TP2"; break; }
-          if (takeProfit1 && high >= takeProfit1) { newStatus = "WIN_TP1"; break; }
-          if (data.takeProfit && high >= data.takeProfit) { newStatus = "WIN_TP1"; break; } // fallback antigo
         } else if (action === "SELL") {
-          // Checa Stop Loss
+          // Checa se atingiu os Take Profits primeiro
+          if (takeProfit3 && low <= takeProfit3) { newStatus = "WIN_TP3"; break; }
+          if (takeProfit2 && low <= takeProfit2) { newStatus = "WIN_TP2"; break; }
+          if (takeProfit1 && low <= takeProfit1) { newStatus = "WIN_TP1"; break; }
+          if (data.takeProfit && low <= data.takeProfit) { newStatus = "WIN_TP1"; break; }
+
+          // Se não bateu nenhum alvo, verifica se foi estopado
           if (high >= stopLoss) {
             newStatus = "LOSS";
             break;
           }
-          // Checa Take Profits
-          if (takeProfit3 && low <= takeProfit3) { newStatus = "WIN_TP3"; break; }
-          if (takeProfit2 && low <= takeProfit2) { newStatus = "WIN_TP2"; break; }
-          if (takeProfit1 && low <= takeProfit1) { newStatus = "WIN_TP1"; break; }
-          if (data.takeProfit && low <= data.takeProfit) { newStatus = "WIN_TP1"; break; } // fallback antigo
         }
       }
 
